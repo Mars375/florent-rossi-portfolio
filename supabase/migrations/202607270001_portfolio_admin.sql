@@ -50,7 +50,7 @@ using (
   lower(coalesce((select auth.jwt()) ->> 'email', '')) = 'm.rossiflorent@gmail.com'
 );
 
-create or replace function public.publish_portfolio()
+create or replace function public.publish_portfolio(next_content jsonb)
 returns void
 language plpgsql
 security invoker
@@ -61,18 +61,14 @@ begin
     raise exception 'forbidden' using errcode = '42501';
   end if;
 
-  if not exists (
-    select 1
-    from public.portfolio_documents
-    where key = 'draft'
-  ) then
-    raise exception 'draft not found' using errcode = 'P0002';
+  if next_content is null then
+    raise exception 'content is required' using errcode = '22004';
   end if;
 
   insert into public.portfolio_documents (key, content, updated_by)
-  select 'published', content, (select auth.uid())
-  from public.portfolio_documents
-  where key = 'draft'
+  values
+    ('draft', next_content, (select auth.uid())),
+    ('published', next_content, (select auth.uid()))
   on conflict (key) do update
   set content = excluded.content,
       updated_at = now(),
@@ -80,8 +76,8 @@ begin
 end;
 $$;
 
-revoke all on function public.publish_portfolio() from public, anon, service_role;
-grant execute on function public.publish_portfolio() to authenticated;
+revoke all on function public.publish_portfolio(jsonb) from public, anon, service_role;
+grant execute on function public.publish_portfolio(jsonb) to authenticated;
 
 insert into storage.buckets (
   id,

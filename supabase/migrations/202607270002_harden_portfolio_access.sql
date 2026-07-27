@@ -10,7 +10,7 @@ to authenticated;
 create index if not exists portfolio_documents_updated_by_idx
 on public.portfolio_documents (updated_by);
 
-revoke all on function public.publish_portfolio()
+revoke all on function public.publish_portfolio(jsonb)
 from public, anon, service_role;
-grant execute on function public.publish_portfolio()
+grant execute on function public.publish_portfolio(jsonb)
 to authenticated;

@@ -10,19 +10,6 @@ import { createBrowserSupabaseClient } from "../../../lib/supabase/browser";
 
 const BUCKET = "portfolio-media";
 
-function objectPathFromPublicUrl(url: string): string | null {
-  const marker = `/storage/v1/object/public/${BUCKET}/`;
-  try {
-    const parsed = new URL(url);
-    const index = parsed.pathname.indexOf(marker);
-    return index === -1
-      ? null
-      : decodeURIComponent(parsed.pathname.slice(index + marker.length));
-  } catch {
-    return null;
-  }
-}
-
 export function MediaUploader({
   label,
   projectId,
@@ -40,7 +27,6 @@ export function MediaUploader({
 }) {
   const [status, setStatus] = useState<"idle" | "uploading" | "error">("idle");
   const [message, setMessage] = useState("");
-  const storedObjectPath = objectPathFromPublicUrl(value);
 
   const upload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -81,32 +67,18 @@ export function MediaUploader({
     }
   };
 
-  const remove = async () => {
+  const remove = () => {
     if (
-      !storedObjectPath ||
+      !value ||
       !window.confirm(
-        "Supprimer ce fichier de la médiathèque ? Cette action est irréversible.",
+        "Retirer ce média du brouillon ? Le fichier restera dans la médiathèque pour ne jamais casser le site publié.",
       )
     ) {
       return;
     }
 
-    try {
-      setStatus("uploading");
-      const supabase = createBrowserSupabaseClient();
-      const { error } = await supabase.storage
-        .from(BUCKET)
-        .remove([storedObjectPath]);
-      if (error) throw error;
-      onDeleted?.();
-      setStatus("idle");
-      setMessage("");
-    } catch (error) {
-      setStatus("error");
-      setMessage(
-        error instanceof Error ? error.message : "Suppression impossible.",
-      );
-    }
+    onDeleted?.();
+    setMessage("");
   };
 
   return (
@@ -136,14 +108,14 @@ export function MediaUploader({
           onChange={upload}
         />
       </label>
-      {storedObjectPath ? (
+      {value && onDeleted ? (
         <button
           className="danger-button"
           type="button"
           disabled={status === "uploading"}
           onClick={remove}
         >
-          Supprimer le fichier
+          Retirer du brouillon
         </button>
       ) : null}
       {message ? <p role="alert">{message}</p> : null}

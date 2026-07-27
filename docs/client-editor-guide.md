@@ -65,8 +65,10 @@ Le film complet ne doit pas être téléversé dans l’aperçu. Collez plutôt 
 Vimeo ou YouTube, ou une URL MP4 directe, puis choisissez le bon hébergeur dans
 la liste.
 
-Les fichiers sont envoyés directement dans la médiathèque Supabase. La
-suppression d’un fichier stocké demande toujours une confirmation.
+Les fichiers sont envoyés directement dans la médiathèque Supabase. « Retirer
+du brouillon » enlève la référence après confirmation, mais conserve le fichier
+dans la médiathèque afin de ne jamais casser une version déjà publiée. Le
+nettoyage des anciens fichiers se fait séparément après vérification.
 
 ## Sauvegarder une copie
 

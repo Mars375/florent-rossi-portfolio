@@ -13,3 +13,10 @@ test("switches both locale directions while preserving route and hash", () => {
 test("adds a locale to unlocalized paths and preserves queries", () => {
   assert.equal(localizedPath("/?preview=1", "fr"), "/fr?preview=1");
 });
+
+test("switches locale inside protected preview routes", () => {
+  assert.equal(
+    localizedPath("/admin/preview/fr/work/afterdark#film", "en"),
+    "/admin/preview/en/work/afterdark#film",
+  );
+});

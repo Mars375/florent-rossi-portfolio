@@ -10,9 +10,26 @@ export type ActionResult = {
 };
 
 export type DraftPublisher = {
-  saveDraft(content: PortfolioContent): Promise<PortfolioContent>;
-  publish(): Promise<void>;
+  publish(content: PortfolioContent): Promise<void>;
 };
+
+export function createSerialTaskQueue() {
+  let tail: Promise<void> = Promise.resolve();
+
+  return {
+    run<Result>(task: () => Promise<Result>): Promise<Result> {
+      const result = tail.then(task);
+      tail = result.then(
+        () => undefined,
+        () => undefined,
+      );
+      return result;
+    },
+    idle(): Promise<void> {
+      return tail;
+    },
+  };
+}
 
 export function reorderProjects(
   projects: Project[],
@@ -75,8 +92,7 @@ export async function publishDraftWithRepository(
 ): Promise<ActionResult> {
   try {
     const content = parsePortfolioContent(value);
-    await repository.saveDraft(content);
-    await repository.publish();
+    await repository.publish(content);
     return { ok: true, message: "Portfolio publié." };
   } catch (error) {
     return {

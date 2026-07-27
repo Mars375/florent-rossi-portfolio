@@ -35,6 +35,6 @@ test("uses least-privilege table grants and indexes the audit foreign key", asyn
   );
   assert.match(
     migrations,
-    /revoke all on function public\.publish_portfolio\(\) from public, anon, service_role/i,
+    /revoke all on function public\.publish_portfolio\(jsonb\) from public, anon, service_role/i,
   );
 });

@@ -8,10 +8,21 @@ export function VideoEmbed({
   project: Project;
   locale: Locale;
 }) {
-  const source = parseVideoSource(
-    project.fullVideo.url,
-    project.fullVideo.provider,
-  );
+  let source: ReturnType<typeof parseVideoSource>;
+  try {
+    source = parseVideoSource(
+      project.fullVideo.url,
+      project.fullVideo.provider,
+    );
+  } catch {
+    return (
+      <div className="full-video video-unavailable" role="status">
+        {locale === "fr"
+          ? "Cette vidéo est momentanément indisponible."
+          : "This video is temporarily unavailable."}
+      </div>
+    );
+  }
   const title = `${project.title[locale]} — ${project.discipline[locale]}`;
 
   if (source.kind === "direct") {
@@ -40,6 +51,7 @@ export function VideoEmbed({
       allowFullScreen
       loading="lazy"
       referrerPolicy="strict-origin-when-cross-origin"
+      sandbox="allow-scripts allow-same-origin allow-presentation"
     />
   );
 }

@@ -9,11 +9,13 @@ export function ProjectCard({
   locale,
   playingLabel,
   viewLabel,
+  routeBase = "",
 }: {
   project: Project;
   locale: Locale;
   playingLabel: string;
   viewLabel: string;
+  routeBase?: string;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hoverPreview, setHoverPreview] = useState(false);
@@ -73,6 +75,7 @@ export function ProjectCard({
   const fallbackMedia =
     project.preview.fallbackGifUrl || project.posterUrl;
   const number = String(project.order).padStart(2, "0");
+  const projectHref = `${routeBase}/${locale}/work/${project.slug}`;
 
   return (
     <article className={`project-card project-${project.layout}`}>
@@ -83,7 +86,7 @@ export function ProjectCard({
       >
         <Link
           className="project-media-link focus-ring"
-          href={`/${locale}/work/${project.slug}`}
+          href={projectHref}
           onFocus={() => startPreview()}
           onBlur={stopPreview}
           aria-label={`${viewLabel}: ${project.title[locale]}`}
@@ -138,7 +141,7 @@ export function ProjectCard({
       </div>
       <Link
         className="project-meta focus-ring"
-        href={`/${locale}/work/${project.slug}`}
+        href={projectHref}
       >
         <span>{number}</span>
         <h2>{project.title[locale]}</h2>

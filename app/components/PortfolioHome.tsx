@@ -6,9 +6,11 @@ import { SiteHeader } from "./SiteHeader";
 export function PortfolioHome({
   locale,
   content,
+  routeBase = "",
 }: {
   locale: Locale;
   content: PortfolioContent;
+  routeBase?: string;
 }) {
   const copy = content.home[locale];
   const projects = content.projects
@@ -17,7 +19,7 @@ export function PortfolioHome({
 
   return (
     <main>
-      <SiteHeader locale={locale} content={content} />
+      <SiteHeader locale={locale} content={content} routeBase={routeBase} />
       <section className="hero shell">
         <div className="hero-kicker">{copy.selectedWork}</div>
         <h1>
@@ -41,6 +43,7 @@ export function PortfolioHome({
             locale={locale}
             playingLabel={copy.playing}
             viewLabel={copy.viewProject}
+            routeBase={routeBase}
           />
         ))}
       </section>
@@ -52,7 +55,10 @@ export function PortfolioHome({
       <section className="profile-teaser shell">
         <p className="section-label">{content.about.label} / 02</p>
         <p className="profile-statement">{copy.profile}</p>
-        <Link className="arrow-link focus-ring" href={`/${locale}/about`}>
+        <Link
+          className="arrow-link focus-ring"
+          href={`${routeBase}/${locale}/about`}
+        >
           {copy.profileLink} ↗
         </Link>
       </section>

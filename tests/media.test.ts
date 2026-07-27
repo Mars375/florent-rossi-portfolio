@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
   mediaObjectPath,
@@ -9,6 +10,14 @@ const file = (name: string, type: string, size: number) => ({
   name,
   type,
   size,
+});
+
+test("draft media removal never deletes a public object immediately", async () => {
+  const source = await readFile(
+    "app/admin/components/MediaUploader.tsx",
+    "utf8",
+  );
+  assert.doesNotMatch(source, /\.remove\(/);
 });
 
 test("accepts optimized portfolio media and rejects oversized files", () => {

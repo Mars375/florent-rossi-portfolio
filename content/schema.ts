@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parseVideoSource } from "../lib/content/video";
 
 const translatedText = z
   .string()
@@ -10,7 +11,14 @@ export const localizedTextSchema = z.object({
   fr: translatedText,
 });
 
-const urlOrEmptySchema = z.union([z.literal(""), z.string().url()]);
+const httpsUrlSchema = z
+  .string()
+  .url()
+  .refine((value) => new URL(value).protocol === "https:", {
+    message: "URL must use HTTPS",
+  });
+
+const urlOrEmptySchema = z.union([z.literal(""), httpsUrlSchema]);
 
 const projectSchema = z.object({
   id: z.string().trim().min(1).regex(/^[a-z0-9-]+$/),
@@ -22,16 +30,29 @@ const projectSchema = z.object({
   title: localizedTextSchema,
   discipline: localizedTextSchema,
   summary: localizedTextSchema,
-  posterUrl: z.string().url(),
+  posterUrl: httpsUrlSchema,
   preview: z.object({
     type: z.enum(["video", "gif", "poster"]),
     url: urlOrEmptySchema,
     fallbackGifUrl: urlOrEmptySchema,
   }),
-  fullVideo: z.object({
-    provider: z.enum(["vimeo", "youtube", "mp4"]),
-    url: z.string().url(),
-  }),
+  fullVideo: z
+    .object({
+      provider: z.enum(["vimeo", "youtube", "mp4"]),
+      url: httpsUrlSchema,
+    })
+    .superRefine((video, context) => {
+      try {
+        parseVideoSource(video.url, video.provider);
+      } catch (error) {
+        context.addIssue({
+          code: "custom",
+          message:
+            error instanceof Error ? error.message : "Invalid video URL",
+          path: ["url"],
+        });
+      }
+    }),
   story: z.object({
     en: z.object({
       brief: translatedText,
@@ -49,7 +70,7 @@ const projectSchema = z.object({
   gallery: z.array(
     z.object({
       type: z.enum(["image", "video", "gif"]),
-      url: z.string().url(),
+      url: httpsUrlSchema,
       alt: localizedTextSchema,
       caption: localizedTextSchema,
       aspect: z.enum(["wide", "portrait", "square"]),
@@ -121,7 +142,7 @@ export const portfolioContentSchema = z
       socials: z.array(
         z.object({
           label: z.string().trim().min(1),
-          url: z.string().url(),
+          url: httpsUrlSchema,
         }),
       ),
     }),
@@ -143,7 +164,7 @@ export const portfolioContentSchema = z
     }),
     about: z.object({
       label: z.string().trim().min(1),
-      imageUrl: z.string().url(),
+      imageUrl: httpsUrlSchema,
       clients: z.array(z.string().trim().min(1)),
       recognition: z.array(z.string().trim().min(1)),
       en: localeAboutSchema,

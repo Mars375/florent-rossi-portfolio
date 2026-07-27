@@ -52,7 +52,6 @@ export async function publishDraftAction(value: unknown): Promise<ActionResult> 
   }
 
   const result = await publishDraftWithRepository(value, {
-    saveDraft: saveDraftContent,
     publish: publishDraftContent,
   });
 

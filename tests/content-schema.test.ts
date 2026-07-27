@@ -28,3 +28,13 @@ test("rejects missing translations", () => {
 
   assert.throws(() => parsePortfolioContent(invalid), /translation/i);
 });
+
+test("rejects executable links and provider-mismatched videos", () => {
+  const unsafeLink = structuredClone(content);
+  unsafeLink.site.socials[0].url = "javascript:alert(1)";
+  assert.throws(() => parsePortfolioContent(unsafeLink), /https/i);
+
+  const invalidVideo = structuredClone(content);
+  invalidVideo.projects[0].fullVideo.url = "https://vimeo.com/";
+  assert.throws(() => parsePortfolioContent(invalidVideo), /vimeo|video/i);
+});

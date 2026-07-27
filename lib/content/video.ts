@@ -1,8 +1,8 @@
-import type { Project } from "../../content/schema";
-
 export type VideoSource =
   | { kind: "embed"; src: string }
   | { kind: "direct"; src: string };
+
+export type VideoProvider = "vimeo" | "youtube" | "mp4";
 
 function secureUrl(value: string): URL {
   const url = new URL(value);
@@ -44,7 +44,7 @@ function youtubeId(url: URL): string {
 
 export function parseVideoSource(
   value: string,
-  provider: Project["fullVideo"]["provider"],
+  provider: VideoProvider,
 ): VideoSource {
   const url = secureUrl(value);
 

@@ -14,7 +14,7 @@ export type ContentKey = "draft" | "published";
 export type ContentStore = {
   read(key: ContentKey): Promise<unknown | null>;
   writeDraft(content: PortfolioContent): Promise<void>;
-  publish(): Promise<void>;
+  publish(content: PortfolioContent): Promise<void>;
 };
 
 export function createContentRepository(store: ContentStore) {
@@ -39,8 +39,9 @@ export function createContentRepository(store: ContentStore) {
       return content;
     },
 
-    async publish(): Promise<void> {
-      await store.publish();
+    async publish(value: unknown): Promise<void> {
+      const content = parsePortfolioContent(value);
+      await store.publish(content);
     },
   };
 }
@@ -76,8 +77,10 @@ function supabaseStore(client: SupabaseClient): ContentStore {
       if (error) throw error;
     },
 
-    async publish() {
-      const { error } = await client.rpc("publish_portfolio");
+    async publish(content) {
+      const { error } = await client.rpc("publish_portfolio", {
+        next_content: content,
+      });
       if (error) throw error;
     },
   };
@@ -101,7 +104,7 @@ export async function saveDraftContent(
   return createContentRepository(supabaseStore(client)).saveDraft(value);
 }
 
-export async function publishDraftContent(): Promise<void> {
+export async function publishDraftContent(value: unknown): Promise<void> {
   const client = await createServerSupabaseClient();
-  await createContentRepository(supabaseStore(client)).publish();
+  await createContentRepository(supabaseStore(client)).publish(value);
 }

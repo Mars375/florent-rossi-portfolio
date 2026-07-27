@@ -11,7 +11,11 @@ import {
   parsePortfolioContent,
   type PortfolioContent,
 } from "../../content/schema";
-import { duplicateProject, reorderProjects } from "../../lib/content/editor";
+import {
+  createSerialTaskQueue,
+  duplicateProject,
+  reorderProjects,
+} from "../../lib/content/editor";
 import { publishDraftAction, saveDraftAction } from "./actions";
 import { LocalizedField } from "./components/LocalizedField";
 import { ProjectEditor } from "./components/ProjectEditor";
@@ -41,6 +45,7 @@ export function AdminEditor({
   const [publishing, setPublishing] = useState(false);
   const mounted = useRef(false);
   const revision = useRef(0);
+  const saveQueue = useRef(createSerialTaskQueue());
 
   const edit = (mutate: (draft: PortfolioContent) => void) => {
     setContent((current) => {
@@ -62,7 +67,7 @@ export function AdminEditor({
     const currentRevision = revision.current;
     const timer = window.setTimeout(async () => {
       setSaveStatus("saving");
-      const result = await saveDraftAction(content);
+      const result = await saveQueue.current.run(() => saveDraftAction(content));
 
       if (revision.current !== currentRevision) return;
       setSaveStatus(result.ok ? "saved" : "error");
@@ -82,6 +87,7 @@ export function AdminEditor({
     }
 
     setPublishing(true);
+    await saveQueue.current.idle();
     const result = await publishDraftAction(content);
     setPublishing(false);
     setMessage(result.message);

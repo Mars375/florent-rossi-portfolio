@@ -9,9 +9,10 @@ export function isLocale(value: string): value is Locale {
 export function localizedPath(value: string, nextLocale: Locale): string {
   const url = new URL(value, "https://atelier-vif.local");
   const segments = url.pathname.split("/").filter(Boolean);
+  const localeIndex = segments.findIndex((segment) => isLocale(segment));
 
-  if (segments[0] && isLocale(segments[0])) {
-    segments[0] = nextLocale;
+  if (localeIndex >= 0) {
+    segments[localeIndex] = nextLocale;
   } else {
     segments.unshift(nextLocale);
   }
