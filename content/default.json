@@ -1,0 +1,476 @@
+{
+  "schemaVersion": 1,
+  "site": {
+    "name": "Atelier Vif",
+    "email": "hello@ateliervif.com",
+    "location": {
+      "en": "Paris / Worldwide",
+      "fr": "Paris / Monde"
+    },
+    "copyright": "© 2026 Atelier Vif",
+    "socials": [
+      {
+        "label": "Instagram",
+        "url": "https://instagram.com/"
+      },
+      {
+        "label": "Vimeo",
+        "url": "https://vimeo.com/"
+      }
+    ]
+  },
+  "navigation": {
+    "en": {
+      "work": "Work",
+      "about": "Studio",
+      "contact": "Contact"
+    },
+    "fr": {
+      "work": "Projets",
+      "about": "Studio",
+      "contact": "Contact"
+    }
+  },
+  "home": {
+    "en": {
+      "heroLineOne": "Ideas move.",
+      "heroLineTwo": "Images speak.",
+      "intro": "Independent art direction for culture, music & fashion. Paris / available worldwide.",
+      "selectedWork": "Selected work 2022—26",
+      "playing": "Playing",
+      "viewProject": "View project",
+      "scrollCue": "View work",
+      "capabilities": "Strategy / Art direction / Campaigns / Film / Digital",
+      "profile": "Atelier Vif builds visual worlds where strategy, image and motion meet.",
+      "profileLink": "Discover the studio",
+      "footerTitle": "Let’s make something move."
+    },
+    "fr": {
+      "heroLineOne": "Les idées bougent.",
+      "heroLineTwo": "Les images parlent.",
+      "intro": "Direction artistique indépendante pour la culture, la musique et la mode. Paris / disponible partout.",
+      "selectedWork": "Projets choisis 2022—26",
+      "playing": "En lecture",
+      "viewProject": "Voir le projet",
+      "scrollCue": "Voir les projets",
+      "capabilities": "Stratégie / Direction artistique / Campagnes / Film / Digital",
+      "profile": "Atelier Vif façonne des univers visuels où stratégie, image et mouvement se rencontrent.",
+      "profileLink": "Découvrir le studio",
+      "footerTitle": "Faisons bouger quelque chose."
+    }
+  },
+  "about": {
+    "label": "Studio / Paris",
+    "imageUrl": "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1800&q=88",
+    "clients": [
+      "Maison Objet",
+      "Éclat Magazine",
+      "Nordic Soundscape",
+      "Verso Film",
+      "Palais 21"
+    ],
+    "recognition": [
+      "Graphis New Talent",
+      "Type Directors Club",
+      "Creative Review",
+      "It’s Nice That"
+    ],
+    "en": {
+      "title": "A studio for ideas that refuse to sit still.",
+      "imageAlt": "Atelier Vif creative studio",
+      "intro": "Atelier Vif is an independent art direction practice shaping identities, campaigns and moving images across culture, music and fashion.",
+      "manifesto": "We look for the right tension: between a clear idea and an image that refuses to be forgotten.",
+      "practiceLabel": "Practice",
+      "services": [
+        "Creative strategy",
+        "Art direction",
+        "Brand worlds",
+        "Campaigns",
+        "Film & motion",
+        "Digital experiences"
+      ],
+      "clientsLabel": "Selected clients",
+      "recognitionLabel": "Recognition",
+      "process": [
+        {
+          "title": "Listen",
+          "text": "Understand the context, culture and central tension."
+        },
+        {
+          "title": "Shape",
+          "text": "Build a distinct, coherent and flexible language."
+        },
+        {
+          "title": "Move",
+          "text": "Carry the idea through every image, space and interaction."
+        }
+      ],
+      "availability": "Currently booking for Q3 / Q4 2026",
+      "credentials": "Request credentials",
+      "footerTitle": "Have a project in motion?"
+    },
+    "fr": {
+      "title": "Un studio pour les idées qui refusent de rester immobiles.",
+      "imageAlt": "Studio créatif Atelier Vif",
+      "intro": "Atelier Vif est un studio indépendant qui façonne identités, campagnes et images en mouvement pour la culture, la musique et la mode.",
+      "manifesto": "Nous cherchons la tension juste : entre une idée claire et une image impossible à oublier.",
+      "practiceLabel": "Pratique",
+      "services": [
+        "Stratégie créative",
+        "Direction artistique",
+        "Univers de marque",
+        "Campagnes",
+        "Film & motion",
+        "Expériences digitales"
+      ],
+      "clientsLabel": "Clients choisis",
+      "recognitionLabel": "Reconnaissance",
+      "process": [
+        {
+          "title": "Écouter",
+          "text": "Comprendre le contexte, la culture et la tension centrale."
+        },
+        {
+          "title": "Façonner",
+          "text": "Construire un langage distinct, cohérent et flexible."
+        },
+        {
+          "title": "Mettre en mouvement",
+          "text": "Déployer l’idée dans chaque image, espace et interaction."
+        }
+      ],
+      "availability": "Disponible pour Q3 / Q4 2026",
+      "credentials": "Demander les références",
+      "footerTitle": "Un projet en mouvement ?"
+    }
+  },
+  "projects": [
+    {
+      "id": "afterdark",
+      "slug": "afterdark",
+      "status": "published",
+      "order": 1,
+      "layout": "wide",
+      "year": "2026",
+      "title": {
+        "en": "Afterdark",
+        "fr": "Afterdark"
+      },
+      "discipline": {
+        "en": "Festival identity + film",
+        "fr": "Identité de festival + film"
+      },
+      "summary": {
+        "en": "Identity, campaign and film for a festival after sunset.",
+        "fr": "Identité, campagne et film pour un festival après le coucher du soleil."
+      },
+      "posterUrl": "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1800&q=88",
+      "preview": {
+        "type": "video",
+        "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+        "fallbackGifUrl": ""
+      },
+      "fullVideo": {
+        "provider": "vimeo",
+        "url": "https://vimeo.com/76979871"
+      },
+      "story": {
+        "en": {
+          "brief": "Build an identity that could carry the energy of an entire night—from the first poster to the film’s final frame.",
+          "idea": "Night becomes a frequency.",
+          "system": "Condensed type, a strobing rhythm and an acid spectrum form a flexible language across screen, space and print.",
+          "outcome": "A coherent campaign across twelve cities, with the film becoming the launch’s central piece."
+        },
+        "fr": {
+          "brief": "Créer une identité capable de traduire l’énergie d’une nuit entière, de l’affiche au dernier plan du film.",
+          "idea": "La nuit devient une fréquence.",
+          "system": "Une typographie condensée, un rythme stroboscopique et un spectre acide composent un langage flexible pour l’écran, l’espace et l’imprimé.",
+          "outcome": "Une campagne cohérente dans douze villes et un film devenu la pièce centrale du lancement."
+        }
+      },
+      "gallery": [
+        {
+          "type": "image",
+          "url": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1800&q=88",
+          "alt": {
+            "en": "Afterdark festival scene",
+            "fr": "Scène du festival Afterdark"
+          },
+          "caption": {
+            "en": "The system in motion / Film 01",
+            "fr": "Le système en mouvement / Film 01"
+          },
+          "aspect": "wide"
+        },
+        {
+          "type": "image",
+          "url": "https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1200&q=88",
+          "alt": {
+            "en": "Lights and crowd",
+            "fr": "Lumières et foule"
+          },
+          "caption": {
+            "en": "Light direction",
+            "fr": "Direction lumière"
+          },
+          "aspect": "portrait"
+        },
+        {
+          "type": "image",
+          "url": "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?auto=format&fit=crop&w=1200&q=88",
+          "alt": {
+            "en": "Music performance",
+            "fr": "Performance musicale"
+          },
+          "caption": {
+            "en": "Vertical social crop",
+            "fr": "Cadre social vertical"
+          },
+          "aspect": "portrait"
+        }
+      ],
+      "credits": [
+        {
+          "role": "Creative Direction",
+          "name": "Atelier Vif"
+        },
+        {
+          "role": "Film",
+          "name": "Studio Mirage"
+        },
+        {
+          "role": "Photography",
+          "name": "Ana Sol"
+        },
+        {
+          "role": "Type",
+          "name": "Custom"
+        },
+        {
+          "role": "Sound",
+          "name": "Nox"
+        }
+      ]
+    },
+    {
+      "id": "nuit-35",
+      "slug": "nuit-35",
+      "status": "published",
+      "order": 2,
+      "layout": "portrait",
+      "year": "2025",
+      "title": {
+        "en": "Nuit 35",
+        "fr": "Nuit 35"
+      },
+      "discipline": {
+        "en": "Fashion film",
+        "fr": "Film de mode"
+      },
+      "summary": {
+        "en": "A nocturnal fashion story built around fabric, gesture and reflected light.",
+        "fr": "Un récit de mode nocturne construit autour du tissu, du geste et de la lumière réfléchie."
+      },
+      "posterUrl": "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1400&q=88",
+      "preview": {
+        "type": "video",
+        "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+        "fallbackGifUrl": ""
+      },
+      "fullVideo": {
+        "provider": "youtube",
+        "url": "https://www.youtube.com/watch?v=M7lc1UVf-VE"
+      },
+      "story": {
+        "en": {
+          "brief": "Turn a capsule collection into a seven-minute visual narrative with no spoken language.",
+          "idea": "The garment remembers every movement.",
+          "system": "A narrow palette, long lenses and graphic cuts connect campaign, runway and social film.",
+          "outcome": "The film premiered during fashion week and became the collection’s central campaign asset."
+        },
+        "fr": {
+          "brief": "Transformer une collection capsule en récit visuel de sept minutes, sans langage parlé.",
+          "idea": "Le vêtement se souvient de chaque mouvement.",
+          "system": "Une palette resserrée, de longues focales et des coupes graphiques relient campagne, défilé et film social.",
+          "outcome": "Le film a été présenté pendant la fashion week et est devenu la pièce centrale de la campagne."
+        }
+      },
+      "gallery": [],
+      "credits": [
+        {
+          "role": "Creative Direction",
+          "name": "Atelier Vif"
+        },
+        {
+          "role": "Styling",
+          "name": "Clara Moss"
+        }
+      ]
+    },
+    {
+      "id": "orbital-radio",
+      "slug": "orbital-radio",
+      "status": "published",
+      "order": 3,
+      "layout": "square",
+      "year": "2025",
+      "title": {
+        "en": "Orbital Radio",
+        "fr": "Orbital Radio"
+      },
+      "discipline": {
+        "en": "Campaign + digital",
+        "fr": "Campagne + digital"
+      },
+      "summary": {
+        "en": "A living broadcast identity for an independent radio station.",
+        "fr": "Une identité de diffusion vivante pour une radio indépendante."
+      },
+      "posterUrl": "https://images.unsplash.com/photo-1598387993441-a364f854c3e1?auto=format&fit=crop&w=1400&q=88",
+      "preview": {
+        "type": "video",
+        "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+        "fallbackGifUrl": ""
+      },
+      "fullVideo": {
+        "provider": "mp4",
+        "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+      },
+      "story": {
+        "en": {
+          "brief": "Give a community station an identity that changes as quickly as its programming.",
+          "idea": "Every transmission draws a new orbit.",
+          "system": "Generative rings, signal textures and modular type create an identity designed for live use.",
+          "outcome": "The station doubled its digital audience during the launch season."
+        },
+        "fr": {
+          "brief": "Donner à une radio communautaire une identité qui évolue aussi vite que sa programmation.",
+          "idea": "Chaque transmission dessine une nouvelle orbite.",
+          "system": "Anneaux génératifs, textures de signal et typographie modulaire composent une identité pensée pour le direct.",
+          "outcome": "La radio a doublé son audience numérique pendant la saison de lancement."
+        }
+      },
+      "gallery": [],
+      "credits": [
+        {
+          "role": "Creative Direction",
+          "name": "Atelier Vif"
+        },
+        {
+          "role": "Development",
+          "name": "Kernel Studio"
+        }
+      ]
+    },
+    {
+      "id": "material-memory",
+      "slug": "material-memory",
+      "status": "published",
+      "order": 4,
+      "layout": "landscape",
+      "year": "2024",
+      "title": {
+        "en": "Material Memory",
+        "fr": "Mémoire Matérielle"
+      },
+      "discipline": {
+        "en": "Culture exhibition",
+        "fr": "Exposition culturelle"
+      },
+      "summary": {
+        "en": "An exhibition identity exploring how objects preserve human traces.",
+        "fr": "Une identité d’exposition explorant la façon dont les objets conservent les traces humaines."
+      },
+      "posterUrl": "https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=1600&q=88",
+      "preview": {
+        "type": "video",
+        "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+        "fallbackGifUrl": ""
+      },
+      "fullVideo": {
+        "provider": "mp4",
+        "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+      },
+      "story": {
+        "en": {
+          "brief": "Make material research approachable without simplifying its complexity.",
+          "idea": "Every surface is an archive.",
+          "system": "Microscopic crops, quiet typography and tactile motion form a slow editorial rhythm.",
+          "outcome": "The identity connected the physical exhibition to an evolving online archive."
+        },
+        "fr": {
+          "brief": "Rendre la recherche sur la matière accessible sans en simplifier la complexité.",
+          "idea": "Chaque surface est une archive.",
+          "system": "Cadrages microscopiques, typographie silencieuse et mouvement tactile composent un rythme éditorial lent.",
+          "outcome": "L’identité a relié l’exposition physique à une archive numérique évolutive."
+        }
+      },
+      "gallery": [],
+      "credits": [
+        {
+          "role": "Creative Direction",
+          "name": "Atelier Vif"
+        },
+        {
+          "role": "Curation",
+          "name": "Palais 21"
+        }
+      ]
+    },
+    {
+      "id": "sans-titre-08",
+      "slug": "sans-titre-08",
+      "status": "published",
+      "order": 5,
+      "layout": "portrait",
+      "year": "2023",
+      "title": {
+        "en": "Sans Titre 08",
+        "fr": "Sans Titre 08"
+      },
+      "discipline": {
+        "en": "Editorial series",
+        "fr": "Série éditoriale"
+      },
+      "summary": {
+        "en": "A moving editorial study of bodies, architecture and interruption.",
+        "fr": "Une étude éditoriale en mouvement sur les corps, l’architecture et l’interruption."
+      },
+      "posterUrl": "https://images.unsplash.com/photo-1543076447-215ad9ba6923?auto=format&fit=crop&w=1400&q=88",
+      "preview": {
+        "type": "video",
+        "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+        "fallbackGifUrl": ""
+      },
+      "fullVideo": {
+        "provider": "mp4",
+        "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+      },
+      "story": {
+        "en": {
+          "brief": "Create an image series that behaves like an unfinished sentence.",
+          "idea": "The interruption becomes the subject.",
+          "system": "Cropped gestures, abrupt scale changes and pauses build a deliberately unstable sequence.",
+          "outcome": "The series became a print edition, a short film and a travelling installation."
+        },
+        "fr": {
+          "brief": "Créer une série d’images qui se comporte comme une phrase inachevée.",
+          "idea": "L’interruption devient le sujet.",
+          "system": "Gestes recadrés, changements d’échelle brusques et pauses construisent une séquence volontairement instable.",
+          "outcome": "La série est devenue une édition imprimée, un court film et une installation itinérante."
+        }
+      },
+      "gallery": [],
+      "credits": [
+        {
+          "role": "Creative Direction",
+          "name": "Atelier Vif"
+        },
+        {
+          "role": "Photography",
+          "name": "Noé Varga"
+        }
+      ]
+    }
+  ]
+}
