@@ -11,6 +11,14 @@ test("uses the Vercel-compatible Next runtime", async () => {
   assert.ok(pkg.dependencies["@supabase/ssr"]);
   assert.ok(pkg.dependencies["@supabase/supabase-js"]);
   assert.ok(pkg.dependencies.zod);
+
+  const [major, minor, patch] = pkg.dependencies.next
+    .split(".")
+    .map(Number);
+  assert.ok(
+    major > 16 || (major === 16 && (minor > 2 || (minor === 2 && patch >= 12))),
+    "Next.js must include the 16.2.12 security fixes",
+  );
 });
 
 test("keeps Turbopack scoped to this repository", async () => {
