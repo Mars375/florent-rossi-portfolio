@@ -1,9 +1,9 @@
-# Atelier Vif — portfolio vidéo
+# Florent Rossi — portfolio personnel
 
-Portfolio bilingue FR/EN de direction artistique, construit avec Next.js pour
-Vercel. Le contenu public et le brouillon sont stockés comme documents JSON
-validés dans Supabase. Un seul compte administrateur peut modifier, prévisualiser
-et publier le site.
+Portfolio personnel bilingue FR/EN de Florent Rossi, directeur artistique,
+construit avec Next.js pour Vercel. Le contenu public et le brouillon sont
+stockés comme documents JSON validés dans Supabase. Un seul compte administrateur
+peut modifier, prévisualiser et publier le site.
 
 ## Fonctionnalités
 

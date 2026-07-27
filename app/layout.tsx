@@ -9,16 +9,16 @@ export async function generateMetadata(): Promise<Metadata> {
     requestHeaders.get("x-forwarded-proto") ??
     (host.startsWith("localhost") ? "http" : "https");
   const baseUrl = new URL(`${protocol}://${host}`);
-  const title = "Atelier Vif — Art Direction";
+  const title = "Florent Rossi — Art Director";
   const description =
-    "Independent art direction for culture, music and fashion. Paris, available worldwide.";
+    "Florent Rossi is a Paris-based art director working across culture, music and fashion, looking for a permanent position.";
   const socialImage = new URL("/og.png", baseUrl).toString();
 
   return {
     metadataBase: baseUrl,
     title: {
       default: title,
-      template: "%s — Atelier Vif",
+      template: "%s — Florent Rossi",
     },
     description,
     openGraph: {

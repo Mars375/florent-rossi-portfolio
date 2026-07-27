@@ -26,7 +26,7 @@ type Tab = "site" | "home" | "about" | "projects";
 const tabLabels: Record<Tab, string> = {
   site: "Site",
   home: "Accueil",
-  about: "Studio",
+  about: "À propos",
   projects: "Projets",
 };
 
@@ -109,7 +109,7 @@ export function AdminEditor({
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = "atelier-vif-content.json";
+    anchor.download = "florent-rossi-content.json";
     anchor.click();
     URL.revokeObjectURL(url);
   };
@@ -199,7 +199,7 @@ export function AdminEditor({
               <h2>Informations générales</h2>
               <div className="admin-grid admin-grid-2">
                 <label>
-                  Nom du studio
+                  Nom affiché
                   <input
                     value={content.site.name}
                     onChange={(event) =>
@@ -385,7 +385,7 @@ export function AdminEditor({
                   />
                 </label>
                 <label>
-                  Image du studio
+                  Portrait / visuel
                   <input
                     type="url"
                     value={content.about.imageUrl}
@@ -429,7 +429,7 @@ export function AdminEditor({
 
             {(["fr", "en"] as const).map((locale) => (
               <section className="admin-form-section" key={locale}>
-                <h2>Studio {locale.toUpperCase()}</h2>
+                <h2>Profil {locale.toUpperCase()}</h2>
                 {(
                   [
                     "title",

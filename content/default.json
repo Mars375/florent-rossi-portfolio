@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
   "site": {
-    "name": "Atelier Vif",
-    "email": "hello@ateliervif.com",
+    "name": "Florent Rossi",
+    "email": "m.rossiflorent@gmail.com",
     "location": {
-      "en": "Paris / Worldwide",
-      "fr": "Paris / Monde"
+      "en": "Paris / Open to opportunities",
+      "fr": "Paris / Ouvert aux opportunités"
     },
-    "copyright": "© 2026 Atelier Vif",
+    "copyright": "© 2026 Florent Rossi",
     "socials": [
       {
         "label": "Instagram",
@@ -22,12 +22,12 @@
   "navigation": {
     "en": {
       "work": "Work",
-      "about": "Studio",
+      "about": "About",
       "contact": "Contact"
     },
     "fr": {
       "work": "Projets",
-      "about": "Studio",
+      "about": "À propos",
       "contact": "Contact"
     }
   },
@@ -35,33 +35,33 @@
     "en": {
       "heroLineOne": "Ideas move.",
       "heroLineTwo": "Images speak.",
-      "intro": "Independent art direction for culture, music & fashion. Paris / available worldwide.",
+      "intro": "I’m Florent Rossi, an art director working across culture, music and fashion. Based in Paris, I’m looking for a permanent position in an agency or brand.",
       "selectedWork": "Selected work 2022—26",
       "playing": "Playing",
       "viewProject": "View project",
       "scrollCue": "View work",
       "capabilities": "Strategy / Art direction / Campaigns / Film / Digital",
-      "profile": "Atelier Vif builds visual worlds where strategy, image and motion meet.",
-      "profileLink": "Discover the studio",
-      "footerTitle": "Let’s make something move."
+      "profile": "I build visual worlds where strategy, image and motion meet.",
+      "profileLink": "About me",
+      "footerTitle": "Let’s build what comes next."
     },
     "fr": {
       "heroLineOne": "Les idées bougent.",
       "heroLineTwo": "Les images parlent.",
-      "intro": "Direction artistique indépendante pour la culture, la musique et la mode. Paris / disponible partout.",
+      "intro": "Je suis Florent Rossi, directeur artistique entre culture, musique et mode. Basé à Paris, je recherche un poste permanent en agence ou chez une marque.",
       "selectedWork": "Projets choisis 2022—26",
       "playing": "En lecture",
       "viewProject": "Voir le projet",
       "scrollCue": "Voir les projets",
       "capabilities": "Stratégie / Direction artistique / Campagnes / Film / Digital",
-      "profile": "Atelier Vif façonne des univers visuels où stratégie, image et mouvement se rencontrent.",
-      "profileLink": "Découvrir le studio",
-      "footerTitle": "Faisons bouger quelque chose."
+      "profile": "Je construis des univers visuels où stratégie, image et mouvement se rencontrent.",
+      "profileLink": "À propos de moi",
+      "footerTitle": "Construisons la suite."
     }
   },
   "about": {
-    "label": "Studio / Paris",
-    "imageUrl": "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1800&q=88",
+    "label": "Florent Rossi / Paris",
+    "imageUrl": "/media/florent/about-poster.jpg",
     "clients": [
       "Maison Objet",
       "Éclat Magazine",
@@ -76,10 +76,10 @@
       "It’s Nice That"
     ],
     "en": {
-      "title": "A studio for ideas that refuse to sit still.",
-      "imageAlt": "Atelier Vif creative studio",
-      "intro": "Atelier Vif is an independent art direction practice shaping identities, campaigns and moving images across culture, music and fashion.",
-      "manifesto": "We look for the right tension: between a clear idea and an image that refuses to be forgotten.",
+      "title": "An art director for ideas that refuse to sit still.",
+      "imageAlt": "Graphic portrait placeholder for Florent Rossi",
+      "intro": "I’m Florent Rossi, an art director shaping identities, campaigns and moving images across culture, music and fashion.",
+      "manifesto": "I look for the right tension: between a clear idea and an image that refuses to be forgotten.",
       "practiceLabel": "Practice",
       "services": [
         "Creative strategy",
@@ -105,15 +105,15 @@
           "text": "Carry the idea through every image, space and interaction."
         }
       ],
-      "availability": "Currently booking for Q3 / Q4 2026",
-      "credentials": "Request credentials",
-      "footerTitle": "Have a project in motion?"
+      "availability": "Looking for a permanent position in an agency or brand",
+      "credentials": "Download résumé",
+      "footerTitle": "Looking for your next art director?"
     },
     "fr": {
-      "title": "Un studio pour les idées qui refusent de rester immobiles.",
-      "imageAlt": "Studio créatif Atelier Vif",
-      "intro": "Atelier Vif est un studio indépendant qui façonne identités, campagnes et images en mouvement pour la culture, la musique et la mode.",
-      "manifesto": "Nous cherchons la tension juste : entre une idée claire et une image impossible à oublier.",
+      "title": "Un directeur artistique pour les idées qui refusent de rester immobiles.",
+      "imageAlt": "Portrait graphique temporaire de Florent Rossi",
+      "intro": "Je suis Florent Rossi, directeur artistique. Je conçois des identités, campagnes et images en mouvement pour la culture, la musique et la mode.",
+      "manifesto": "Je cherche la tension juste : entre une idée claire et une image impossible à oublier.",
       "practiceLabel": "Pratique",
       "services": [
         "Stratégie créative",
@@ -139,9 +139,9 @@
           "text": "Déployer l’idée dans chaque image, espace et interaction."
         }
       ],
-      "availability": "Disponible pour Q3 / Q4 2026",
-      "credentials": "Demander les références",
-      "footerTitle": "Un projet en mouvement ?"
+      "availability": "En recherche d’un poste permanent en agence ou chez une marque",
+      "credentials": "Télécharger le CV",
+      "footerTitle": "Vous cherchez votre prochain directeur artistique ?"
     }
   },
   "projectPage": {
@@ -186,10 +186,10 @@
         "en": "Identity, campaign and film for a festival after sunset.",
         "fr": "Identité, campagne et film pour un festival après le coucher du soleil."
       },
-      "posterUrl": "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1800&q=88",
+      "posterUrl": "/media/florent/afterdark-poster.jpg",
       "preview": {
         "type": "video",
-        "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+        "url": "/media/florent/afterdark-loop.mp4",
         "fallbackGifUrl": ""
       },
       "fullVideo": {
@@ -212,8 +212,8 @@
       },
       "gallery": [
         {
-          "type": "image",
-          "url": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1800&q=88",
+          "type": "video",
+          "url": "/media/florent/afterdark-loop.mp4",
           "alt": {
             "en": "Afterdark festival scene",
             "fr": "Scène du festival Afterdark"
@@ -254,7 +254,7 @@
       "credits": [
         {
           "role": "Creative Direction",
-          "name": "Atelier Vif"
+          "name": "Florent Rossi"
         },
         {
           "role": "Film",
@@ -293,10 +293,10 @@
         "en": "A nocturnal fashion story built around fabric, gesture and reflected light.",
         "fr": "Un récit de mode nocturne construit autour du tissu, du geste et de la lumière réfléchie."
       },
-      "posterUrl": "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1400&q=88",
+      "posterUrl": "/media/florent/nuit-35-poster.jpg",
       "preview": {
         "type": "video",
-        "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+        "url": "/media/florent/nuit-35-loop.mp4",
         "fallbackGifUrl": ""
       },
       "fullVideo": {
@@ -317,11 +317,19 @@
           "outcome": "Le film a été présenté pendant la fashion week et est devenu la pièce centrale de la campagne."
         }
       },
-      "gallery": [],
+      "gallery": [
+        {
+          "type": "video",
+          "url": "/media/florent/nuit-35-loop.mp4",
+          "alt": { "en": "Nuit 35 motion loop", "fr": "Boucle animée Nuit 35" },
+          "caption": { "en": "The system in motion", "fr": "Le système en mouvement" },
+          "aspect": "portrait"
+        }
+      ],
       "credits": [
         {
           "role": "Creative Direction",
-          "name": "Atelier Vif"
+          "name": "Florent Rossi"
         },
         {
           "role": "Styling",
@@ -348,10 +356,10 @@
         "en": "A living broadcast identity for an independent radio station.",
         "fr": "Une identité de diffusion vivante pour une radio indépendante."
       },
-      "posterUrl": "https://images.unsplash.com/photo-1598387993441-a364f854c3e1?auto=format&fit=crop&w=1400&q=88",
+      "posterUrl": "/media/florent/orbital-radio-poster.jpg",
       "preview": {
         "type": "video",
-        "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+        "url": "/media/florent/orbital-radio-loop.mp4",
         "fallbackGifUrl": ""
       },
       "fullVideo": {
@@ -372,11 +380,19 @@
           "outcome": "La radio a doublé son audience numérique pendant la saison de lancement."
         }
       },
-      "gallery": [],
+      "gallery": [
+        {
+          "type": "video",
+          "url": "/media/florent/orbital-radio-loop.mp4",
+          "alt": { "en": "Orbital Radio motion loop", "fr": "Boucle animée Orbital Radio" },
+          "caption": { "en": "The system in motion", "fr": "Le système en mouvement" },
+          "aspect": "square"
+        }
+      ],
       "credits": [
         {
           "role": "Creative Direction",
-          "name": "Atelier Vif"
+          "name": "Florent Rossi"
         },
         {
           "role": "Development",
@@ -403,10 +419,10 @@
         "en": "An exhibition identity exploring how objects preserve human traces.",
         "fr": "Une identité d’exposition explorant la façon dont les objets conservent les traces humaines."
       },
-      "posterUrl": "https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=1600&q=88",
+      "posterUrl": "/media/florent/material-memory-poster.jpg",
       "preview": {
         "type": "video",
-        "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+        "url": "/media/florent/material-memory-loop.mp4",
         "fallbackGifUrl": ""
       },
       "fullVideo": {
@@ -427,11 +443,19 @@
           "outcome": "L’identité a relié l’exposition physique à une archive numérique évolutive."
         }
       },
-      "gallery": [],
+      "gallery": [
+        {
+          "type": "video",
+          "url": "/media/florent/material-memory-loop.mp4",
+          "alt": { "en": "Material Memory motion loop", "fr": "Boucle animée Mémoire Matérielle" },
+          "caption": { "en": "The system in motion", "fr": "Le système en mouvement" },
+          "aspect": "wide"
+        }
+      ],
       "credits": [
         {
           "role": "Creative Direction",
-          "name": "Atelier Vif"
+          "name": "Florent Rossi"
         },
         {
           "role": "Curation",
@@ -458,10 +482,10 @@
         "en": "A moving editorial study of bodies, architecture and interruption.",
         "fr": "Une étude éditoriale en mouvement sur les corps, l’architecture et l’interruption."
       },
-      "posterUrl": "https://images.unsplash.com/photo-1543076447-215ad9ba6923?auto=format&fit=crop&w=1400&q=88",
+      "posterUrl": "/media/florent/sans-titre-08-poster.jpg",
       "preview": {
         "type": "video",
-        "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+        "url": "/media/florent/sans-titre-08-loop.mp4",
         "fallbackGifUrl": ""
       },
       "fullVideo": {
@@ -482,11 +506,19 @@
           "outcome": "La série est devenue une édition imprimée, un court film et une installation itinérante."
         }
       },
-      "gallery": [],
+      "gallery": [
+        {
+          "type": "video",
+          "url": "/media/florent/sans-titre-08-loop.mp4",
+          "alt": { "en": "Sans Titre 08 motion loop", "fr": "Boucle animée Sans Titre 08" },
+          "caption": { "en": "The system in motion", "fr": "Le système en mouvement" },
+          "aspect": "portrait"
+        }
+      ],
       "credits": [
         {
           "role": "Creative Direction",
-          "name": "Atelier Vif"
+          "name": "Florent Rossi"
         },
         {
           "role": "Photography",

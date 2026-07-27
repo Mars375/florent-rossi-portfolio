@@ -32,5 +32,5 @@ test("publishing passes the validated document to one atomic operation", async (
     ok: true,
     message: "Portfolio publié.",
   });
-  assert.equal(publishedName, "Atelier Vif");
+  assert.equal(publishedName, "Florent Rossi");
 });

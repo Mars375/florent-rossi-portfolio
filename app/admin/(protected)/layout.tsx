@@ -34,7 +34,7 @@ export default async function ProtectedAdminLayout({
   return (
     <div className="admin-shell">
       <header className="admin-header">
-        <Link href="/admin">Atelier Vif / Admin</Link>
+        <Link href="/admin">Florent Rossi / Admin</Link>
         <span>{user.email}</span>
         <form action={signOutAction}>
           <button type="submit">Déconnexion</button>

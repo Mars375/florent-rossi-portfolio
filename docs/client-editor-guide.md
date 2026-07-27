@@ -1,4 +1,4 @@
-# Guide de l’éditeur Atelier Vif
+# Guide de l’éditeur du portfolio Florent Rossi
 
 ## Se connecter
 
@@ -26,7 +26,7 @@ L’éditeur comporte quatre onglets :
 - **Site** : nom, e-mail public, localisation, navigation et réseaux sociaux;
 - **Accueil** : grand titre, introduction, textes de présentation et libellés
   des études de cas;
-- **Studio** : présentation, services, clients, distinctions et processus;
+- **À propos** : profil, services, clients, distinctions et processus;
 - **Projets** : contenu, médias, étude de cas, galerie et crédits.
 
 Les champs FR et EN sont toujours présentés ensemble. Remplissez les deux

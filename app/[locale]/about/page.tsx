@@ -7,7 +7,7 @@ import { getPublishedContent } from "../../../lib/content/repository";
 type PageProps = { params: Promise<{ locale: string }> };
 
 export async function generateMetadata(): Promise<Metadata> {
-  return { title: "Studio & Contact" };
+  return { title: "Florent Rossi — About" };
 }
 
 export default async function AboutPage({ params }: PageProps) {
