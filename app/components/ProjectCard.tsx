@@ -116,7 +116,7 @@ export function ProjectCard({
             />
           ) : null}
           <span className={`playing-badge ${playing ? "is-visible" : ""}`}>
-            {playingLabel} 00:07
+            {playingLabel} 00:06
           </span>
           <span className={`preview-progress ${playing ? "is-active" : ""}`} />
         </Link>

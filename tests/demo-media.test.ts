@@ -133,3 +133,16 @@ test("generator is idempotent for committed production media", async () => {
   assert.deepEqual(await checksums(outputDirectory, generatedNames), beforeMedia);
   assert.deepEqual(await checksums("public", ["og.png"]), beforeSocialCard);
 });
+
+test("generates the social card with the tracked Geist font rather than a host fallback", async () => {
+  const [generator, font] = await Promise.all([
+    readFile("scripts/generate-demo-media.mjs", "utf8"),
+    stat("scripts/assets/Geist-Regular.ttf"),
+  ]);
+
+  assert.ok(font.size > 10_000);
+  assert.match(generator, /scripts\/assets\/Geist-Regular\.ttf|assets[\\/]Geist-Regular\.ttf/);
+  assert.match(generator, /data:font\/ttf;base64/);
+  assert.doesNotMatch(generator, /Arial|Helvetica|sans-serif/);
+  assert.doesNotMatch(generator, /node_modules/);
+});

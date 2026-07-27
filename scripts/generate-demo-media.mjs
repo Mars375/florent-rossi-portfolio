@@ -1,4 +1,4 @@
-import { copyFile, mkdir } from "node:fs/promises";
+import { copyFile, mkdir, readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import ffmpegPath from "ffmpeg-static";
@@ -80,18 +80,26 @@ async function generateLoop({ id, source }) {
   ]);
 }
 
-const socialCard = `
+async function socialCard() {
+  const font = await readFile("scripts/assets/Geist-Regular.ttf");
+  const fontDataUrl = `data:font/ttf;base64,${font.toString("base64")}`;
+
+  return `
 <svg width="1734" height="909" viewBox="0 0 1734 909" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>@font-face { font-family: "Geist"; src: url("${fontDataUrl}") format("truetype"); }</style>
+  </defs>
   <rect width="1734" height="909" fill="#f2efe6"/>
   <rect x="1030" y="0" width="704" height="909" fill="#dfff00"/>
   <circle cx="1370" cy="438" r="280" fill="#2600ff"/>
-  <g fill="#000000" font-family="Arial, Helvetica, sans-serif" font-weight="900">
+  <g fill="#000000" font-family="Geist" font-weight="900">
     <text x="90" y="165" font-size="104" letter-spacing="-5">FLORENT ROSSI</text>
     <text x="95" y="265" font-size="52" letter-spacing="3">ART DIRECTOR</text>
     <text x="90" y="620" font-size="124" letter-spacing="-6">IDEAS MOVE.</text>
     <text x="90" y="745" font-size="124" letter-spacing="-6">IMAGES SPEAK.</text>
   </g>
 </svg>`;
+}
 
 async function main() {
   if (!ffmpegPath) {
@@ -110,7 +118,7 @@ async function main() {
   );
 
   await mkdir(dirname("public/og.png"), { recursive: true });
-  await sharp(Buffer.from(socialCard)).png().toFile("public/og.png");
+  await sharp(Buffer.from(await socialCard())).png().toFile("public/og.png");
 }
 
 main().catch((error) => {

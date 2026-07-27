@@ -315,7 +315,7 @@ a:focus-visible {
 }
 
 .preview-progress.is-active {
-  animation: preview-progress 7s linear infinite;
+  animation: preview-progress 6s linear infinite;
 }
 
 .preview-toggle {

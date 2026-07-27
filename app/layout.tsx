@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { documentLanguage, REQUEST_LOCALE_HEADER } from "../lib/request-locale";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -36,13 +37,15 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const requestHeaders = await headers();
+
   return (
-    <html lang="en">
+    <html lang={documentLanguage(requestHeaders.get(REQUEST_LOCALE_HEADER))}>
       <body>{children}</body>
     </html>
   );

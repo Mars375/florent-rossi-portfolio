@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import test from "node:test";
 import { generateMetadata as generateAboutMetadata } from "../app/[locale]/about/page";
+import { generateMetadata as generateHomeMetadata } from "../app/[locale]/page";
 import content from "../content/default.json";
 import { parsePortfolioContent } from "../content/schema";
 
@@ -82,4 +83,30 @@ test("localizes about metadata without duplicating Florent Rossi", async () => {
   assert.equal(english.title, "About");
   assert.equal(french.title, "À propos");
   assert.doesNotMatch(`${english.title} ${french.title}`, /Florent Rossi/);
+});
+
+test("localizes home metadata around Florent Rossi's permanent-role search", async () => {
+  const metadataForLocale = generateHomeMetadata as unknown as (props: {
+    params: Promise<{ locale: string }>;
+  }) => Promise<{ description?: string }>;
+
+  const english = await metadataForLocale({
+    params: Promise.resolve({ locale: "en" }),
+  });
+  const french = await metadataForLocale({
+    params: Promise.resolve({ locale: "fr" }),
+  });
+
+  assert.match(english.description ?? "", /Florent Rossi/);
+  assert.match(english.description ?? "", /permanent position/i);
+  assert.match(french.description ?? "", /Florent Rossi/);
+  assert.match(french.description ?? "", /poste permanent/i);
+  assert.doesNotMatch(`${english.description}\n${french.description}`, /indépendante|Independent art direction/);
+});
+
+test("describes the mailto credentials action as a CV request", () => {
+  const parsed = parsePortfolioContent(content);
+
+  assert.equal(parsed.about.fr.credentials, "Demander mon CV");
+  assert.equal(parsed.about.en.credentials, "Request my résumé");
 });

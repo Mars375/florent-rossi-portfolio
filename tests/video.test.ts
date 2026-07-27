@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { parseVideoSource } from "../lib/content/video";
+import { readFile } from "node:fs/promises";
 
 test("parses Vimeo video links", () => {
   assert.deepEqual(parseVideoSource("https://vimeo.com/76979871", "vimeo"), {
@@ -34,4 +35,14 @@ test("accepts only secure direct MP4 URLs", () => {
   assert.throws(() =>
     parseVideoSource("https://cdn.example.com/film.mov", "mp4"),
   );
+});
+
+test("matches the six-second project loops in the visible preview timing", async () => {
+  const [card, styles] = await Promise.all([
+    readFile("app/components/ProjectCard.tsx", "utf8"),
+    readFile("app/globals.css", "utf8"),
+  ]);
+
+  assert.match(card, /00:06/);
+  assert.match(styles, /animation:\s*preview-progress 6s linear infinite/);
 });

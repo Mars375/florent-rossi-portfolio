@@ -15,8 +15,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: fr ? "Direction artistique" : "Art Direction",
     description: fr
-      ? "Direction artistique indépendante pour la culture, la musique et la mode."
-      : "Independent art direction for culture, music and fashion.",
+      ? "Florent Rossi, directeur artistique basé à Paris, recherche un poste permanent en agence ou chez une marque."
+      : "Florent Rossi is a Paris-based art director looking for a permanent position in an agency or brand.",
   };
 }
 

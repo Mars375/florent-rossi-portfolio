@@ -255,7 +255,7 @@ Set `about.label` to `Florent Rossi / Paris`,
     "intro": "I’m Florent Rossi, an art director shaping identities, campaigns and moving images across culture, music and fashion.",
     "manifesto": "I look for the right tension: between a clear idea and an image that refuses to be forgotten.",
     "availability": "Looking for a permanent position in an agency or brand",
-    "credentials": "Download résumé",
+    "credentials": "Request my résumé",
     "footerTitle": "Looking for your next art director?"
   },
   "fr": {
@@ -264,7 +264,7 @@ Set `about.label` to `Florent Rossi / Paris`,
     "intro": "Je suis Florent Rossi, directeur artistique. Je conçois des identités, campagnes et images en mouvement pour la culture, la musique et la mode.",
     "manifesto": "Je cherche la tension juste : entre une idée claire et une image impossible à oublier.",
     "availability": "En recherche d’un poste permanent en agence ou chez une marque",
-    "credentials": "Télécharger le CV",
+    "credentials": "Demander mon CV",
     "footerTitle": "Vous cherchez votre prochain directeur artistique ?"
   }
 }
