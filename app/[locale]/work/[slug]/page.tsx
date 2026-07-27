@@ -15,7 +15,8 @@ type PageProps = {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale, slug } = await params;
   const project = getProjectBySlug(slug);
-  return { title: project?.title[locale] ?? "Project" };
+  const safeLocale = locales.includes(locale) ? (locale as "en" | "fr") : "en";
+  return { title: project?.title[safeLocale] ?? "Project" };
 }
 
 export default async function WorkPage({ params }: PageProps) {
