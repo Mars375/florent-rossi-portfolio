@@ -18,7 +18,22 @@ const httpsUrlSchema = z
     message: "URL must use HTTPS",
   });
 
-const urlOrEmptySchema = z.union([z.literal(""), httpsUrlSchema]);
+const localMediaPathSchema = z
+  .string()
+  .regex(
+    /^\/media\/[a-z0-9][a-z0-9/_-]*\.(?:gif|jpe?g|png|webp|mp4|webm)$/i,
+    "Local media path must stay under /media",
+  );
+
+const portfolioMediaUrlSchema = z.union([
+  localMediaPathSchema,
+  httpsUrlSchema,
+]);
+
+const mediaUrlOrEmptySchema = z.union([
+  z.literal(""),
+  portfolioMediaUrlSchema,
+]);
 
 const projectSchema = z.object({
   id: z.string().trim().min(1).regex(/^[a-z0-9-]+$/),
@@ -30,11 +45,11 @@ const projectSchema = z.object({
   title: localizedTextSchema,
   discipline: localizedTextSchema,
   summary: localizedTextSchema,
-  posterUrl: httpsUrlSchema,
+  posterUrl: portfolioMediaUrlSchema,
   preview: z.object({
     type: z.enum(["video", "gif", "poster"]),
-    url: urlOrEmptySchema,
-    fallbackGifUrl: urlOrEmptySchema,
+    url: mediaUrlOrEmptySchema,
+    fallbackGifUrl: mediaUrlOrEmptySchema,
   }),
   fullVideo: z
     .object({
@@ -70,7 +85,7 @@ const projectSchema = z.object({
   gallery: z.array(
     z.object({
       type: z.enum(["image", "video", "gif"]),
-      url: httpsUrlSchema,
+      url: portfolioMediaUrlSchema,
       alt: localizedTextSchema,
       caption: localizedTextSchema,
       aspect: z.enum(["wide", "portrait", "square"]),
@@ -164,7 +179,7 @@ export const portfolioContentSchema = z
     }),
     about: z.object({
       label: z.string().trim().min(1),
-      imageUrl: httpsUrlSchema,
+      imageUrl: portfolioMediaUrlSchema,
       clients: z.array(z.string().trim().min(1)),
       recognition: z.array(z.string().trim().min(1)),
       en: localeAboutSchema,

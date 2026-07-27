@@ -38,3 +38,16 @@ test("rejects executable links and provider-mismatched videos", () => {
   invalidVideo.projects[0].fullVideo.url = "https://vimeo.com/";
   assert.throws(() => parsePortfolioContent(invalidVideo), /vimeo|video/i);
 });
+
+test("accepts versioned local media but rejects protocol-relative paths", () => {
+  const local = structuredClone(content);
+  local.about.imageUrl = "/media/florent/about-poster.jpg";
+  local.projects[0].posterUrl = "/media/florent/afterdark-poster.jpg";
+  local.projects[0].preview.url = "/media/florent/afterdark-loop.mp4";
+  local.projects[0].gallery[0].url = "/media/florent/afterdark-loop.mp4";
+  assert.doesNotThrow(() => parsePortfolioContent(local));
+
+  const unsafe = structuredClone(local);
+  unsafe.projects[0].preview.url = "//evil.example/loop.mp4";
+  assert.throws(() => parsePortfolioContent(unsafe), /media|path|url/i);
+});
