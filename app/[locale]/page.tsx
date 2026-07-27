@@ -3,11 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProjectCard } from "../components/ProjectCard";
 import { SiteHeader } from "../components/SiteHeader";
-import {
-  getDictionary,
-  locales,
-  projects,
-} from "../data/portfolio.mjs";
+import { isLocale } from "../../lib/content/locales";
+import { getPublishedContent } from "../../lib/content/repository";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -15,42 +12,51 @@ type PageProps = {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
+  const fr = locale === "fr";
+
   return {
-    title: locale === "fr" ? "Direction artistique" : "Art Direction",
-    description:
-      locale === "fr"
-        ? "Direction artistique indépendante pour la culture, la musique et la mode."
-        : "Independent art direction for culture, music and fashion.",
+    title: fr ? "Direction artistique" : "Art Direction",
+    description: fr
+      ? "Direction artistique indépendante pour la culture, la musique et la mode."
+      : "Independent art direction for culture, music and fashion.",
   };
 }
 
 export default async function PortfolioPage({ params }: PageProps) {
   const { locale: rawLocale } = await params;
-  if (!locales.includes(rawLocale)) notFound();
-  const locale = rawLocale as "en" | "fr";
-  const copy = getDictionary(locale);
-  const profileLink = locale === "fr" ? "Découvrir le studio" : "Discover the studio";
+  if (!isLocale(rawLocale)) notFound();
+
+  const locale = rawLocale;
+  const content = await getPublishedContent();
+  const copy = content.home[locale];
+  const projects = content.projects
+    .filter((project) => project.status === "published")
+    .sort((a, b) => a.order - b.order);
 
   return (
     <main>
-      <SiteHeader locale={locale} alternatePath={`/${locale === "en" ? "fr" : "en"}`} />
+      <SiteHeader locale={locale} content={content} />
 
       <section className="hero shell">
         <div className="hero-kicker">{copy.selectedWork}</div>
         <h1>
-          <span>{copy.hero.lineOne}</span>
-          <span>{copy.hero.lineTwo}</span>
+          <span>{copy.heroLineOne}</span>
+          <span>{copy.heroLineTwo}</span>
         </h1>
-        <p>{copy.hero.intro}</p>
+        <p>{copy.intro}</p>
         <a className="scroll-cue focus-ring" href="#work">
-          ↓ {locale === "fr" ? "Voir les projets" : "View work"}
+          ↓ {copy.scrollCue}
         </a>
       </section>
 
-      <section className="work-grid shell" id="work" aria-label={copy.nav.work}>
+      <section
+        className="work-grid shell"
+        id="work"
+        aria-label={content.navigation[locale].work}
+      >
         {projects.map((project) => (
           <ProjectCard
-            key={project.slug}
+            key={project.id}
             project={project}
             locale={locale}
             playingLabel={copy.playing}
@@ -59,27 +65,34 @@ export default async function PortfolioPage({ params }: PageProps) {
         ))}
       </section>
 
-      <div className="capability-strip" aria-label="Capabilities">
-        <div>{copy.capabilities} / {copy.capabilities}</div>
+      <div className="capability-strip" aria-label={copy.capabilities}>
+        <div>
+          {copy.capabilities} / {copy.capabilities}
+        </div>
       </div>
 
       <section className="profile-teaser shell">
-        <p className="section-label">Studio / 02</p>
+        <p className="section-label">{content.about.label} / 02</p>
         <p className="profile-statement">{copy.profile}</p>
         <Link className="arrow-link focus-ring" href={`/${locale}/about`}>
-          {profileLink} ↗
+          {copy.profileLink} ↗
         </Link>
       </section>
 
       <footer className="giant-footer">
-        <p>{copy.footer}</p>
-        <a className="email-link focus-ring" href="mailto:hello@ateliervif.com">
-          HELLO@ATELIERVIF.COM
+        <p>{copy.footerTitle}</p>
+        <a
+          className="email-link focus-ring"
+          href={`mailto:${content.site.email}`}
+        >
+          {content.site.email.toUpperCase()}
         </a>
         <div className="footer-meta">
-          <span>PARIS / WORLDWIDE</span>
-          <span>INSTAGRAM / VIMEO</span>
-          <span>© 2026 ATELIER VIF</span>
+          <span>{content.site.location[locale].toUpperCase()}</span>
+          <span>
+            {content.site.socials.map((social) => social.label).join(" / ")}
+          </span>
+          <span>{content.site.copyright.toUpperCase()}</span>
         </div>
       </footer>
     </main>

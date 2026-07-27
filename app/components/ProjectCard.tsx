@@ -2,20 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { canAutoplayPreview } from "../data/portfolio.mjs";
-
-type LocalizedText = { en: string; fr: string };
-
-type Project = {
-  number: string;
-  slug: string;
-  title: LocalizedText;
-  discipline: LocalizedText;
-  year: string;
-  poster: string;
-  previewVideo: string;
-  layout: string;
-};
+import type { Locale, Project } from "../../content/schema";
 
 export function ProjectCard({
   project,
@@ -24,25 +11,24 @@ export function ProjectCard({
   viewLabel,
 }: {
   project: Project;
-  locale: "en" | "fr";
+  locale: Locale;
   playingLabel: string;
   viewLabel: string;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [canPreview, setCanPreview] = useState(false);
+  const [hoverPreview, setHoverPreview] = useState(false);
+  const [touchPreview, setTouchPreview] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
 
   useEffect(() => {
     const hover = window.matchMedia("(hover: hover) and (pointer: fine)");
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-    const update = () =>
-      setCanPreview(
-        canAutoplayPreview({
-          hoverCapable: hover.matches,
-          reduceMotion: motion.matches,
-        }),
-      );
+    const update = () => {
+      setHoverPreview(hover.matches && !motion.matches);
+      setTouchPreview(!hover.matches);
+    };
 
     update();
     hover.addEventListener("change", update);
@@ -53,8 +39,8 @@ export function ProjectCard({
     };
   }, []);
 
-  const startPreview = async () => {
-    if (!canPreview || !videoRef.current) return;
+  const startPreview = async (explicit = false) => {
+    if ((!hoverPreview && !explicit) || !videoRef.current) return;
 
     try {
       await videoRef.current.play();
@@ -72,32 +58,55 @@ export function ProjectCard({
     setPlaying(false);
   };
 
+  const toggleTouchPreview = async () => {
+    if (playing) {
+      stopPreview();
+    } else {
+      await startPreview(true);
+    }
+  };
+
+  const hasVideo =
+    project.preview.type === "video" &&
+    Boolean(project.preview.url) &&
+    !videoFailed;
+  const fallbackMedia =
+    project.preview.fallbackGifUrl || project.posterUrl;
+  const number = String(project.order).padStart(2, "0");
+
   return (
     <article className={`project-card project-${project.layout}`}>
-      <Link
-        className="project-link focus-ring"
-        href={`/${locale}/work/${project.slug}`}
-        onMouseEnter={startPreview}
+      <div
+        className={`project-media ${playing ? "is-playing" : ""}`}
+        onMouseEnter={() => startPreview()}
         onMouseLeave={stopPreview}
-        onFocus={startPreview}
-        onBlur={stopPreview}
-        aria-label={`${viewLabel}: ${project.title[locale]}`}
       >
-        <div className="project-media">
+        <Link
+          className="project-media-link focus-ring"
+          href={`/${locale}/work/${project.slug}`}
+          onFocus={() => startPreview()}
+          onBlur={stopPreview}
+          aria-label={`${viewLabel}: ${project.title[locale]}`}
+        >
           <img
-            src={project.poster}
+            src={
+              project.preview.type === "gif" && project.preview.url
+                ? project.preview.url
+                : fallbackMedia
+            }
             alt=""
-            loading={project.number === "01" ? "eager" : "lazy"}
+            loading={project.order === 1 ? "eager" : "lazy"}
           />
-          {canPreview ? (
+          {hasVideo ? (
             <video
               ref={videoRef}
-              src={project.previewVideo}
+              src={project.preview.url}
               muted
               loop
               playsInline
               preload="metadata"
-              poster={project.poster}
+              poster={project.posterUrl}
+              onError={() => setVideoFailed(true)}
               aria-hidden="true"
             />
           ) : null}
@@ -105,13 +114,34 @@ export function ProjectCard({
             {playingLabel} 00:07
           </span>
           <span className={`preview-progress ${playing ? "is-active" : ""}`} />
-        </div>
-        <div className="project-meta">
-          <span>{project.number}</span>
-          <h2>{project.title[locale]}</h2>
-          <span>{project.discipline[locale]}</span>
-          <span>{project.year}</span>
-        </div>
+        </Link>
+        {touchPreview && hasVideo ? (
+          <button
+            className="preview-toggle focus-ring"
+            type="button"
+            onClick={toggleTouchPreview}
+            aria-label={
+              playing
+                ? locale === "fr"
+                  ? "Mettre l’aperçu en pause"
+                  : "Pause preview"
+                : locale === "fr"
+                  ? "Lire l’aperçu"
+                  : "Play preview"
+            }
+          >
+            {playing ? "Ⅱ" : "▶"}
+          </button>
+        ) : null}
+      </div>
+      <Link
+        className="project-meta focus-ring"
+        href={`/${locale}/work/${project.slug}`}
+      >
+        <span>{number}</span>
+        <h2>{project.title[locale]}</h2>
+        <span>{project.discipline[locale]}</span>
+        <span>{project.year}</span>
       </Link>
     </article>
   );

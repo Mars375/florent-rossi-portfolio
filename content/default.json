@@ -144,6 +144,28 @@
       "footerTitle": "Un projet en mouvement ?"
     }
   },
+  "projectPage": {
+    "en": {
+      "selectedWork": "Selected work",
+      "playFilm": "Play full film",
+      "brief": "The brief",
+      "idea": "The idea",
+      "system": "The system",
+      "outcome": "Outcome",
+      "back": "Back to all work",
+      "next": "Next project"
+    },
+    "fr": {
+      "selectedWork": "Projet choisi",
+      "playFilm": "Voir le film",
+      "brief": "Le brief",
+      "idea": "L’idée",
+      "system": "Le système",
+      "outcome": "Impact",
+      "back": "Retour aux projets",
+      "next": "Projet suivant"
+    }
+  },
   "projects": [
     {
       "id": "afterdark",

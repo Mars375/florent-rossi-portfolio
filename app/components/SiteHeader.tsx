@@ -1,43 +1,32 @@
 import Link from "next/link";
+import type { Locale, PortfolioContent } from "../../content/schema";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 type SiteHeaderProps = {
-  locale: "en" | "fr";
-  alternatePath: string;
+  locale: Locale;
+  content: PortfolioContent;
 };
 
-export function SiteHeader({ locale, alternatePath }: SiteHeaderProps) {
-  const labels =
-    locale === "fr"
-      ? { work: "Projets", studio: "Studio", contact: "Contact" }
-      : { work: "Work", studio: "Studio", contact: "Contact" };
+export function SiteHeader({ locale, content }: SiteHeaderProps) {
+  const labels = content.navigation[locale];
 
   return (
     <header className="site-header">
       <Link className="wordmark focus-ring" href={`/${locale}`}>
-        Atelier Vif
+        {content.site.name}
       </Link>
       <nav aria-label={locale === "fr" ? "Navigation principale" : "Main navigation"}>
         <Link className="nav-link focus-ring" href={`/${locale}#work`}>
           {labels.work}
         </Link>
         <Link className="nav-link focus-ring" href={`/${locale}/about`}>
-          {labels.studio}
+          {labels.about}
         </Link>
-        <a className="nav-link focus-ring" href="mailto:hello@ateliervif.com">
+        <a className="nav-link focus-ring" href={`mailto:${content.site.email}`}>
           {labels.contact}
         </a>
       </nav>
-      <div className="locale-switch" aria-label="Language">
-        <span aria-current={locale === "en" ? "page" : undefined}>EN</span>
-        <span aria-hidden="true">/</span>
-        <Link
-          className="focus-ring"
-          aria-current={locale === "fr" ? "page" : undefined}
-          href={alternatePath}
-        >
-          FR
-        </Link>
-      </div>
+      <LanguageSwitcher locale={locale} />
     </header>
   );
 }

@@ -99,6 +99,17 @@ const localeAboutSchema = z.object({
   footerTitle: translatedText,
 });
 
+const projectPageSchema = z.object({
+  selectedWork: translatedText,
+  playFilm: translatedText,
+  brief: translatedText,
+  idea: translatedText,
+  system: translatedText,
+  outcome: translatedText,
+  back: translatedText,
+  next: translatedText,
+});
+
 export const portfolioContentSchema = z
   .object({
     schemaVersion: z.literal(1),
@@ -137,6 +148,10 @@ export const portfolioContentSchema = z
       recognition: z.array(z.string().trim().min(1)),
       en: localeAboutSchema,
       fr: localeAboutSchema,
+    }),
+    projectPage: z.object({
+      en: projectPageSchema,
+      fr: projectPageSchema,
     }),
     projects: z.array(projectSchema).min(1),
   })
