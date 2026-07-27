@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import test from "node:test";
 import ffmpegPath from "ffmpeg-static";
@@ -66,12 +66,14 @@ test("ships five distinct, optimized MP4 loops and matching posters", async () =
 
   assert.equal(hashes.size, ids.length);
   const about = await sharp(`${outputDirectory}/about-poster.jpg`).metadata();
+  const aboutFile = await readFile(`${outputDirectory}/about-poster.jpg`);
   const socialCard = await readFile("public/og.png");
   const socialCardMetadata = await sharp(socialCard).metadata();
 
   assert.equal(about.format, "jpeg");
   assert.equal(about.width, 1280);
   assert.equal(about.height, 720);
+  assert.deepEqual([...aboutFile.subarray(0, 3)], [0xff, 0xd8, 0xff]);
   assert.deepEqual([...socialCard.subarray(0, 8)], [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
   assert.equal(socialCardMetadata.format, "png");
   assert.equal(socialCardMetadata.width, 1734);
@@ -105,32 +107,15 @@ test("content consumes the exact local media asset paths", async () => {
   );
 });
 
-test("generator produces identical outputs when repeated with repository dependencies", async () => {
-  const temporaryDirectory = await mkdtemp(join("public/media/", "florent-media-test-"));
-  const outputNames = [...generatedNames, "og.png"];
+test("generator is idempotent for committed production media", async () => {
+  const beforeMedia = await checksums(outputDirectory, generatedNames);
+  const beforeSocialCard = await checksums("public", ["og.png"]);
+  const result = spawnSync(process.execPath, ["scripts/generate-demo-media.mjs"], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+  });
 
-  try {
-    const generate = () => {
-      const result = spawnSync(process.execPath, ["scripts/generate-demo-media.mjs"], {
-        cwd: process.cwd(),
-        encoding: "utf8",
-        env: {
-          ...process.env,
-          DEMO_MEDIA_DURATION: "0.1",
-          DEMO_MEDIA_OUTPUT_DIRECTORY: temporaryDirectory,
-          DEMO_MEDIA_OG_PATH: join(temporaryDirectory, "og.png"),
-          DEMO_MEDIA_POSTER_TIME: "0",
-        },
-      });
-
-      assert.equal(result.status, 0, result.stderr);
-    };
-
-    generate();
-    const firstRun = await checksums(temporaryDirectory, outputNames);
-    generate();
-    assert.deepEqual(await checksums(temporaryDirectory, outputNames), firstRun);
-  } finally {
-    await rm(temporaryDirectory, { force: true, recursive: true });
-  }
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(await checksums(outputDirectory, generatedNames), beforeMedia);
+  assert.deepEqual(await checksums("public", ["og.png"]), beforeSocialCard);
 });

@@ -4,10 +4,7 @@ import { spawnSync } from "node:child_process";
 import ffmpegPath from "ffmpeg-static";
 import sharp from "sharp";
 
-const outputDirectory = process.env.DEMO_MEDIA_OUTPUT_DIRECTORY ?? "public/media/florent";
-const socialCardPath = process.env.DEMO_MEDIA_OG_PATH ?? "public/og.png";
-const duration = process.env.DEMO_MEDIA_DURATION ?? "6";
-const posterTimestamp = process.env.DEMO_MEDIA_POSTER_TIME ?? "1";
+const outputDirectory = "public/media/florent";
 
 const loops = [
   {
@@ -55,7 +52,7 @@ async function generateLoop({ id, source }) {
     "-i",
     source,
     "-t",
-    duration,
+    "6",
     "-an",
     "-c:v",
     "libx264",
@@ -72,7 +69,7 @@ async function generateLoop({ id, source }) {
 
   runFfmpeg([
     "-ss",
-    posterTimestamp,
+    "1",
     "-i",
     videoPath,
     "-frames:v",
@@ -112,8 +109,8 @@ async function main() {
     join(outputDirectory, "about-poster.jpg"),
   );
 
-  await mkdir(dirname(socialCardPath), { recursive: true });
-  await sharp(Buffer.from(socialCard)).png().toFile(socialCardPath);
+  await mkdir(dirname("public/og.png"), { recursive: true });
+  await sharp(Buffer.from(socialCard)).png().toFile("public/og.png");
 }
 
 main().catch((error) => {
