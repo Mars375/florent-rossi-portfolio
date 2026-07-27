@@ -7,3 +7,15 @@ export function configuredAdminEmail(): string {
 export function isAdminEmail(email: string | null | undefined): boolean {
   return email?.trim().toLowerCase() === configuredAdminEmail();
 }
+
+export function safeNextPath(value: string | null | undefined): string {
+  if (!value?.startsWith("/") || value.startsWith("//")) return "/admin";
+
+  try {
+    const url = new URL(value, "https://atelier-vif.local");
+    if (url.origin !== "https://atelier-vif.local") return "/admin";
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return "/admin";
+  }
+}
