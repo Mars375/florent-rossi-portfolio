@@ -1413,6 +1413,62 @@ figcaption {
   background: #f6f2e9;
 }
 
+.admin-upload-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.media-uploader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid rgba(21, 21, 21, 0.2);
+  background: var(--paper);
+}
+
+.media-uploader > div {
+  flex: 1 0 100%;
+  display: grid;
+}
+
+.media-uploader strong {
+  font-size: 13px;
+}
+
+.media-uploader small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.media-uploader p {
+  flex: 1 0 100%;
+  margin: 0;
+  color: #9c2c1c;
+  font-size: 12px;
+}
+
+.media-upload-button {
+  display: inline-grid !important;
+  place-items: center;
+  min-height: 40px;
+  padding: 10px 14px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper) !important;
+  cursor: pointer;
+}
+
+.media-upload-button input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
 .admin-credit-row {
   display: grid;
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.6fr) auto;
@@ -1563,6 +1619,7 @@ figcaption {
 
   .admin-grid-2,
   .admin-grid-3,
+  .admin-upload-grid,
   .admin-localized-field,
   .admin-language-card,
   .admin-project-layout {

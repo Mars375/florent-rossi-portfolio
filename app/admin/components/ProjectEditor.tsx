@@ -2,6 +2,7 @@
 
 import type { Project } from "../../../content/schema";
 import { LocalizedField } from "./LocalizedField";
+import { MediaUploader } from "./MediaUploader";
 
 export function ProjectEditor({
   project,
@@ -128,6 +129,51 @@ export function ProjectEditor({
 
       <section className="admin-form-section">
         <h3>Vidéos et aperçu</h3>
+        <div className="admin-upload-grid">
+          <MediaUploader
+            label="Affiche statique"
+            projectId={project.id}
+            value={project.posterUrl}
+            kind="image"
+            onUploaded={(url) => update("posterUrl", url)}
+          />
+          <MediaUploader
+            label="Boucle d’aperçu"
+            projectId={project.id}
+            value={
+              project.preview.type === "video" ? project.preview.url : ""
+            }
+            kind="preview"
+            onUploaded={(url) =>
+              update("preview", {
+                ...project.preview,
+                type: "video",
+                url,
+              })
+            }
+            onDeleted={() =>
+              update("preview", { ...project.preview, url: "" })
+            }
+          />
+          <MediaUploader
+            label="GIF de secours"
+            projectId={project.id}
+            value={project.preview.fallbackGifUrl}
+            kind="gif"
+            onUploaded={(url) =>
+              update("preview", {
+                ...project.preview,
+                fallbackGifUrl: url,
+              })
+            }
+            onDeleted={() =>
+              update("preview", {
+                ...project.preview,
+                fallbackGifUrl: "",
+              })
+            }
+          />
+        </div>
         <div className="admin-grid admin-grid-2">
           <label>
             Affiche statique
@@ -263,6 +309,40 @@ export function ProjectEditor({
         </div>
         {project.gallery.map((media, mediaIndex) => (
           <div className="admin-nested-card" key={`${project.id}-media-${mediaIndex}`}>
+            <MediaUploader
+              label={`Fichier du visuel ${mediaIndex + 1}`}
+              projectId={project.id}
+              value={media.url}
+              kind={
+                media.type === "video"
+                  ? "preview"
+                  : media.type === "gif"
+                    ? "gif"
+                    : "image"
+              }
+              onUploaded={(url, uploadedMedia) => {
+                const gallery = [...project.gallery];
+                gallery[mediaIndex] = {
+                  ...media,
+                  url,
+                  type:
+                    uploadedMedia.kind === "preview"
+                      ? "video"
+                      : uploadedMedia.kind === "gif"
+                        ? "gif"
+                        : "image",
+                };
+                update("gallery", gallery);
+              }}
+              onDeleted={() =>
+                update(
+                  "gallery",
+                  project.gallery.filter(
+                    (_, itemIndex) => itemIndex !== mediaIndex,
+                  ),
+                )
+              }
+            />
             <div className="admin-grid admin-grid-3">
               <label>
                 Type
