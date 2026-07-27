@@ -1,0 +1,140 @@
+create table if not exists public.portfolio_documents (
+  key text primary key check (key in ('draft', 'published')),
+  content jsonb not null,
+  updated_at timestamptz not null default now(),
+  updated_by uuid references auth.users(id) on delete set null
+);
+
+alter table public.portfolio_documents enable row level security;
+
+create policy "Published portfolio is publicly readable"
+on public.portfolio_documents
+for select
+to anon, authenticated
+using (
+  key = 'published'
+  or lower(coalesce(auth.jwt() ->> 'email', '')) = 'm.rossiflorent@gmail.com'
+);
+
+create policy "Administrator can insert portfolio documents"
+on public.portfolio_documents
+for insert
+to authenticated
+with check (
+  lower(coalesce(auth.jwt() ->> 'email', '')) = 'm.rossiflorent@gmail.com'
+);
+
+create policy "Administrator can update portfolio documents"
+on public.portfolio_documents
+for update
+to authenticated
+using (
+  lower(coalesce(auth.jwt() ->> 'email', '')) = 'm.rossiflorent@gmail.com'
+)
+with check (
+  lower(coalesce(auth.jwt() ->> 'email', '')) = 'm.rossiflorent@gmail.com'
+);
+
+create policy "Administrator can delete portfolio documents"
+on public.portfolio_documents
+for delete
+to authenticated
+using (
+  lower(coalesce(auth.jwt() ->> 'email', '')) = 'm.rossiflorent@gmail.com'
+);
+
+create or replace function public.publish_portfolio()
+returns void
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'm.rossiflorent@gmail.com' then
+    raise exception 'forbidden' using errcode = '42501';
+  end if;
+
+  if not exists (
+    select 1
+    from public.portfolio_documents
+    where key = 'draft'
+  ) then
+    raise exception 'draft not found' using errcode = 'P0002';
+  end if;
+
+  insert into public.portfolio_documents (key, content, updated_by)
+  select 'published', content, auth.uid()
+  from public.portfolio_documents
+  where key = 'draft'
+  on conflict (key) do update
+  set content = excluded.content,
+      updated_at = now(),
+      updated_by = excluded.updated_by;
+end;
+$$;
+
+revoke all on function public.publish_portfolio() from public;
+grant execute on function public.publish_portfolio() to authenticated;
+
+insert into storage.buckets (
+  id,
+  name,
+  public,
+  file_size_limit,
+  allowed_mime_types
+)
+values (
+  'portfolio-media',
+  'portfolio-media',
+  true,
+  26214400,
+  array[
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'image/gif',
+    'video/mp4',
+    'video/webm'
+  ]
+)
+on conflict (id) do update
+set public = excluded.public,
+    file_size_limit = excluded.file_size_limit,
+    allowed_mime_types = excluded.allowed_mime_types;
+
+create policy "Portfolio media is publicly readable"
+on storage.objects
+for select
+to anon, authenticated
+using (bucket_id = 'portfolio-media');
+
+create policy "Administrator can upload portfolio media"
+on storage.objects
+for insert
+to authenticated
+with check (
+  bucket_id = 'portfolio-media'
+  and lower(coalesce(auth.jwt() ->> 'email', '')) = 'm.rossiflorent@gmail.com'
+);
+
+create policy "Administrator can update portfolio media"
+on storage.objects
+for update
+to authenticated
+using (
+  bucket_id = 'portfolio-media'
+  and lower(coalesce(auth.jwt() ->> 'email', '')) = 'm.rossiflorent@gmail.com'
+)
+with check (
+  bucket_id = 'portfolio-media'
+  and lower(coalesce(auth.jwt() ->> 'email', '')) = 'm.rossiflorent@gmail.com'
+);
+
+create policy "Administrator can delete portfolio media"
+on storage.objects
+for delete
+to authenticated
+using (
+  bucket_id = 'portfolio-media'
+  and lower(coalesce(auth.jwt() ->> 'email', '')) = 'm.rossiflorent@gmail.com'
+);
