@@ -18,3 +18,9 @@ test("keeps Turbopack scoped to this repository", async () => {
 
   assert.match(nextConfig, /root:\s*process\.cwd\(\)/);
 });
+
+test("excludes isolated worktrees from repository-wide linting", async () => {
+  const eslintConfig = await readFile("eslint.config.mjs", "utf8");
+
+  assert.match(eslintConfig, /["']\.worktrees\/\*\*["']/);
+});
