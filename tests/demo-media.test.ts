@@ -146,3 +146,17 @@ test("generates the social card with the tracked Geist font rather than a host f
   assert.doesNotMatch(generator, /Arial|Helvetica|sans-serif/);
   assert.doesNotMatch(generator, /node_modules/);
 });
+
+test("ships the Geist OFL license and pinned font provenance", async () => {
+  const [license, provenance] = await Promise.all([
+    readFile("scripts/assets/Geist-OFL-1.1.txt", "utf8"),
+    readFile("scripts/assets/Geist-Regular.provenance.md", "utf8"),
+  ]);
+
+  assert.match(license, /SIL OPEN FONT LICENSE Version 1\.1/);
+  assert.match(license, /Copyright \(c\) 2023 Vercel/);
+  assert.match(provenance, /Geist/i);
+  assert.match(provenance, /SIL Open Font License 1\.1/i);
+  assert.match(provenance, /node_modules[\\/]next[\\/]dist[\\/]compiled[\\/]@vercel[\\/]og[\\/]Geist-Regular\.ttf/);
+  assert.match(provenance, /BDE046DDD9F20BE35B0BD56CC79EB752B967FB6661A3FE76CB067BB09F871D76/);
+});

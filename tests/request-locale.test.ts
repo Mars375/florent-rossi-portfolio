@@ -11,8 +11,22 @@ test("marks French and English public routes with their document languages", () 
   assert.equal(documentLanguage(localeFromPathname("/en/about")), "en");
 });
 
-test("uses English as the document-language fallback for admin routes", () => {
-  assert.equal(localeFromPathname("/admin"), null);
-  assert.equal(localeFromPathname("/admin/preview/fr"), null);
+test("uses French as the document language for French admin routes", () => {
+  assert.equal(documentLanguage(localeFromPathname("/admin")), "fr");
+  assert.equal(documentLanguage(localeFromPathname("/admin/login")), "fr");
+  assert.equal(documentLanguage(localeFromPathname("/admin/projects")), "fr");
+});
+
+test("preserves the selected language in admin preview routes", () => {
+  assert.equal(documentLanguage(localeFromPathname("/admin/preview/fr")), "fr");
+  assert.equal(
+    documentLanguage(localeFromPathname("/admin/preview/fr/work/afterdark")),
+    "fr",
+  );
+  assert.equal(documentLanguage(localeFromPathname("/admin/preview/en/about")), "en");
+});
+
+test("uses English for unknown routes", () => {
+  assert.equal(localeFromPathname("/not-a-route"), null);
   assert.equal(documentLanguage(null), "en");
 });
