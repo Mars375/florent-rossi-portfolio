@@ -50,4 +50,21 @@ test("accepts versioned local media but rejects protocol-relative paths", () => 
   const unsafe = structuredClone(local);
   unsafe.projects[0].preview.url = "//evil.example/loop.mp4";
   assert.throws(() => parsePortfolioContent(unsafe), /media|path|url/i);
+
+  const traversal = structuredClone(local);
+  traversal.projects[0].preview.url = "/media/florent/../outside.mp4";
+  assert.throws(() => parsePortfolioContent(traversal), /media|path|url/i);
+
+  const query = structuredClone(local);
+  query.projects[0].preview.url = "/media/florent/afterdark-loop.mp4?version=1";
+  assert.throws(() => parsePortfolioContent(query), /media|path|url/i);
+
+  const fragment = structuredClone(local);
+  fragment.projects[0].preview.url = "/media/florent/afterdark-loop.mp4#preview";
+  assert.throws(() => parsePortfolioContent(fragment), /media|path|url/i);
+
+  const remoteMedia = structuredClone(local);
+  remoteMedia.projects[0].preview.url =
+    "https://example.supabase.co/storage/v1/object/public/media/florent/afterdark-loop.mp4";
+  assert.doesNotThrow(() => parsePortfolioContent(remoteMedia));
 });
