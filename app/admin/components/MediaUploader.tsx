@@ -23,7 +23,7 @@ export function MediaUploader({
   value: string;
   kind: ValidMedia["kind"];
   onUploaded: (url: string, media: ValidMedia) => void;
-  onDeleted?: () => void;
+  onDeleted?: (url: string) => void;
 }) {
   const [status, setStatus] = useState<"idle" | "uploading" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -71,13 +71,13 @@ export function MediaUploader({
     if (
       !value ||
       !window.confirm(
-        "Retirer ce média du brouillon ? Le fichier restera dans la médiathèque pour ne jamais casser le site publié.",
+        "Retirer ce média du brouillon ? Le fichier ne sera supprimé de la médiathèque qu’après une publication réussie et s’il n’est plus utilisé.",
       )
     ) {
       return;
     }
 
-    onDeleted?.();
+    onDeleted?.(value);
     setMessage("");
   };
 

@@ -58,3 +58,69 @@ export function mediaObjectPath(
   const { extension } = validateMediaFile(file);
   return `projects/${projectId}/${timestamp}-${safeBaseName(file.name)}.${extension}`;
 }
+
+const STORAGE_PATH_PREFIX =
+  "/storage/v1/object/public/portfolio-media/";
+const SAFE_MEDIA_PATH =
+  /^projects\/[a-z0-9-]+\/[A-Za-z0-9][A-Za-z0-9._-]*$/;
+
+function portfolioMediaPath(
+  value: string,
+  projectUrl: string,
+): string | null {
+  try {
+    const url = new URL(value);
+    const expectedOrigin = new URL(projectUrl).origin;
+    if (url.origin !== expectedOrigin) return null;
+    if (!url.pathname.startsWith(STORAGE_PATH_PREFIX)) return null;
+
+    const path = decodeURIComponent(
+      url.pathname.slice(STORAGE_PATH_PREFIX.length),
+    );
+    if (!SAFE_MEDIA_PATH.test(path) || path.includes("..")) return null;
+    return path;
+  } catch {
+    return null;
+  }
+}
+
+function collectMediaPaths(
+  value: unknown,
+  projectUrl: string,
+  paths: Set<string>,
+): void {
+  if (typeof value === "string") {
+    const path = portfolioMediaPath(value, projectUrl);
+    if (path) paths.add(path);
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectMediaPaths(item, projectUrl, paths));
+    return;
+  }
+
+  if (value && typeof value === "object") {
+    Object.values(value).forEach((item) =>
+      collectMediaPaths(item, projectUrl, paths),
+    );
+  }
+}
+
+export function unusedPortfolioMediaPaths(
+  candidateUrls: string[],
+  publishedContent: unknown,
+  projectUrl: string,
+): string[] {
+  const referencedPaths = new Set<string>();
+  collectMediaPaths(publishedContent, projectUrl, referencedPaths);
+
+  return [
+    ...new Set(
+      candidateUrls
+        .map((url) => portfolioMediaPath(url, projectUrl))
+        .filter((path): path is string => Boolean(path))
+        .filter((path) => !referencedPaths.has(path)),
+    ),
+  ];
+}

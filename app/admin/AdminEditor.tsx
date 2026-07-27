@@ -46,6 +46,11 @@ export function AdminEditor({
   const mounted = useRef(false);
   const revision = useRef(0);
   const saveQueue = useRef(createSerialTaskQueue());
+  const pendingMediaDeletes = useRef(new Set<string>());
+
+  const queueMediaDelete = (url: string) => {
+    if (url) pendingMediaDeletes.current.add(url);
+  };
 
   const edit = (mutate: (draft: PortfolioContent) => void) => {
     setContent((current) => {
@@ -88,7 +93,10 @@ export function AdminEditor({
 
     setPublishing(true);
     await saveQueue.current.idle();
-    const result = await publishDraftAction(content);
+    const result = await publishDraftAction(content, [
+      ...pendingMediaDeletes.current,
+    ]);
+    if (result.ok) pendingMediaDeletes.current.clear();
     setPublishing(false);
     setMessage(result.message);
     setSaveStatus(result.ok ? "saved" : "error");
@@ -587,6 +595,7 @@ export function AdminEditor({
                   });
                   setSelectedProjectId(project.id);
                 }}
+                onQueueMediaDelete={queueMediaDelete}
                 onDelete={() => {
                   if (
                     content.projects.length <= 1 ||
@@ -596,6 +605,12 @@ export function AdminEditor({
                   ) {
                     return;
                   }
+                  queueMediaDelete(selectedProject.posterUrl);
+                  queueMediaDelete(selectedProject.preview.url);
+                  queueMediaDelete(selectedProject.preview.fallbackGifUrl);
+                  selectedProject.gallery.forEach((media) =>
+                    queueMediaDelete(media.url),
+                  );
                   const remaining = content.projects.filter(
                     (project) => project.id !== selectedProject.id,
                   );

@@ -3,8 +3,10 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
   mediaObjectPath,
+  unusedPortfolioMediaPaths,
   validateMediaFile,
 } from "../lib/content/media";
+import { defaultContent } from "../lib/content/fallback";
 
 const file = (name: string, type: string, size: number) => ({
   name,
@@ -45,5 +47,33 @@ test("builds a safe project-scoped object path", () => {
   );
   assert.throws(() =>
     mediaObjectPath("../escape", file("loop.mp4", "video/mp4", 100), 42),
+  );
+});
+
+test("deletes only project media no longer referenced after publication", () => {
+  const projectUrl = "https://portfolio.supabase.co";
+  const mediaUrl =
+    `${projectUrl}/storage/v1/object/public/portfolio-media/` +
+    "projects/afterdark/42-old-loop.mp4";
+  const draft = structuredClone(defaultContent);
+
+  assert.deepEqual(
+    unusedPortfolioMediaPaths([mediaUrl], draft, projectUrl),
+    ["projects/afterdark/42-old-loop.mp4"],
+  );
+
+  draft.projects[0].preview.url = mediaUrl;
+  assert.deepEqual(
+    unusedPortfolioMediaPaths([mediaUrl], draft, projectUrl),
+    [],
+  );
+
+  assert.deepEqual(
+    unusedPortfolioMediaPaths(
+      ["https://evil.example/storage/v1/object/public/portfolio-media/x.mp4"],
+      draft,
+      projectUrl,
+    ),
+    [],
   );
 });

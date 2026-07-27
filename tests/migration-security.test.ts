@@ -38,3 +38,19 @@ test("uses least-privilege table grants and indexes the audit foreign key", asyn
     /revoke all on function public\.publish_portfolio\(jsonb\) from public, anon, service_role/i,
   );
 });
+
+test("removes both legacy and atomic publish signatures during upgrade", async () => {
+  const sql = await readFile(
+    "supabase/migrations/202607270004_atomic_content_publish.sql",
+    "utf8",
+  );
+
+  assert.match(
+    sql,
+    /drop function if exists public\.publish_portfolio\(\);/i,
+  );
+  assert.match(
+    sql,
+    /drop function if exists public\.publish_portfolio\(jsonb\);/i,
+  );
+});

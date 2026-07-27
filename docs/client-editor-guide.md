@@ -66,9 +66,10 @@ Vimeo ou YouTube, ou une URL MP4 directe, puis choisissez le bon hébergeur dans
 la liste.
 
 Les fichiers sont envoyés directement dans la médiathèque Supabase. « Retirer
-du brouillon » enlève la référence après confirmation, mais conserve le fichier
-dans la médiathèque afin de ne jamais casser une version déjà publiée. Le
-nettoyage des anciens fichiers se fait séparément après vérification.
+du brouillon » enlève uniquement la référence pendant l’édition. Après une
+publication réussie, l’ancien fichier est supprimé automatiquement s’il n’est
+plus utilisé nulle part dans la version publiée. En cas d’échec du nettoyage,
+le fichier est conservé sans affecter le site.
 
 ## Sauvegarder une copie
 

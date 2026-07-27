@@ -1,3 +1,4 @@
+drop function if exists public.publish_portfolio();
 drop function if exists public.publish_portfolio(jsonb);
 
 create function public.publish_portfolio(next_content jsonb)

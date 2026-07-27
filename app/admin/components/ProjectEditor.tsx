@@ -12,6 +12,7 @@ export function ProjectEditor({
   onMove,
   onDuplicate,
   onDelete,
+  onQueueMediaDelete,
 }: {
   project: Project;
   index: number;
@@ -20,9 +21,15 @@ export function ProjectEditor({
   onMove: (direction: -1 | 1) => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  onQueueMediaDelete: (url: string) => void;
 }) {
   const update = <Key extends keyof Project>(key: Key, value: Project[Key]) =>
     onChange({ ...project, [key]: value });
+  const queueReplacement = (currentUrl: string, nextUrl: string) => {
+    if (currentUrl && currentUrl !== nextUrl) {
+      onQueueMediaDelete(currentUrl);
+    }
+  };
 
   return (
     <div className="project-editor">
@@ -135,7 +142,10 @@ export function ProjectEditor({
             projectId={project.id}
             value={project.posterUrl}
             kind="image"
-            onUploaded={(url) => update("posterUrl", url)}
+            onUploaded={(url) => {
+              queueReplacement(project.posterUrl, url);
+              update("posterUrl", url);
+            }}
           />
           <MediaUploader
             label="Boucle d’aperçu"
@@ -144,34 +154,38 @@ export function ProjectEditor({
               project.preview.type === "video" ? project.preview.url : ""
             }
             kind="preview"
-            onUploaded={(url) =>
+            onUploaded={(url) => {
+              queueReplacement(project.preview.url, url);
               update("preview", {
                 ...project.preview,
                 type: "video",
                 url,
-              })
-            }
-            onDeleted={() =>
+              });
+            }}
+            onDeleted={(url) => {
+              onQueueMediaDelete(url);
               update("preview", { ...project.preview, url: "" })
-            }
+            }}
           />
           <MediaUploader
             label="GIF de secours"
             projectId={project.id}
             value={project.preview.fallbackGifUrl}
             kind="gif"
-            onUploaded={(url) =>
+            onUploaded={(url) => {
+              queueReplacement(project.preview.fallbackGifUrl, url);
               update("preview", {
                 ...project.preview,
                 fallbackGifUrl: url,
-              })
-            }
-            onDeleted={() =>
+              });
+            }}
+            onDeleted={(url) => {
+              onQueueMediaDelete(url);
               update("preview", {
                 ...project.preview,
                 fallbackGifUrl: "",
-              })
-            }
+              });
+            }}
           />
         </div>
         <div className="admin-grid admin-grid-2">
@@ -180,7 +194,10 @@ export function ProjectEditor({
             <input
               type="url"
               value={project.posterUrl}
-              onChange={(event) => update("posterUrl", event.target.value)}
+              onChange={(event) => {
+                queueReplacement(project.posterUrl, event.target.value);
+                update("posterUrl", event.target.value);
+              }}
             />
           </label>
           <label>
@@ -204,12 +221,13 @@ export function ProjectEditor({
             <input
               type="url"
               value={project.preview.url}
-              onChange={(event) =>
+              onChange={(event) => {
+                queueReplacement(project.preview.url, event.target.value);
                 update("preview", {
                   ...project.preview,
                   url: event.target.value,
-                })
-              }
+                });
+              }}
             />
           </label>
           <label>
@@ -217,12 +235,16 @@ export function ProjectEditor({
             <input
               type="url"
               value={project.preview.fallbackGifUrl}
-              onChange={(event) =>
+              onChange={(event) => {
+                queueReplacement(
+                  project.preview.fallbackGifUrl,
+                  event.target.value,
+                );
                 update("preview", {
                   ...project.preview,
                   fallbackGifUrl: event.target.value,
-                })
-              }
+                });
+              }}
             />
           </label>
           <label>
@@ -321,6 +343,7 @@ export function ProjectEditor({
                     : "image"
               }
               onUploaded={(url, uploadedMedia) => {
+                queueReplacement(media.url, url);
                 const gallery = [...project.gallery];
                 gallery[mediaIndex] = {
                   ...media,
@@ -334,14 +357,15 @@ export function ProjectEditor({
                 };
                 update("gallery", gallery);
               }}
-              onDeleted={() =>
+              onDeleted={(url) => {
+                onQueueMediaDelete(url);
                 update(
                   "gallery",
                   project.gallery.filter(
                     (_, itemIndex) => itemIndex !== mediaIndex,
                   ),
-                )
-              }
+                );
+              }}
             />
             <div className="admin-grid admin-grid-3">
               <label>
@@ -383,12 +407,13 @@ export function ProjectEditor({
               <button
                 className="danger-button"
                 type="button"
-                onClick={() =>
+                onClick={() => {
+                  onQueueMediaDelete(media.url);
                   update(
                     "gallery",
                     project.gallery.filter((_, itemIndex) => itemIndex !== mediaIndex),
-                  )
-                }
+                  );
+                }}
               >
                 Retirer
               </button>
@@ -399,6 +424,7 @@ export function ProjectEditor({
                 type="url"
                 value={media.url}
                 onChange={(event) => {
+                  queueReplacement(media.url, event.target.value);
                   const gallery = [...project.gallery];
                   gallery[mediaIndex] = { ...media, url: event.target.value };
                   update("gallery", gallery);
