@@ -88,6 +88,7 @@ export default async function WorkPage({ params }: PageProps) {
                     preload="metadata"
                   />
                 ) : (
+                  /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     src={media.url}
                     alt={media.alt[locale]}

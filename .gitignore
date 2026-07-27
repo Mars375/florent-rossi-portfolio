@@ -41,6 +41,7 @@ skills-lock.json
 
 # typescript
 next-env.d.ts
+*.tsbuildinfo
 /dist/
 /.wrangler/
 /outputs/

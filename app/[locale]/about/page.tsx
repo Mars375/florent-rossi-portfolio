@@ -25,6 +25,8 @@ export default async function AboutPage({ params }: PageProps) {
       <section className="about-hero shell">
         <p className="section-label">{content.about.label}</p>
         <h1>{copy.title}</h1>
+        {/* The source is client-managed JSON and may use any HTTPS host. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={content.about.imageUrl}
           alt={copy.imageAlt}

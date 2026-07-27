@@ -13,11 +13,19 @@ const emailOtpTypes = new Set<EmailOtpType>([
 ]);
 
 export async function GET(request: NextRequest) {
+  const code = request.nextUrl.searchParams.get("code");
   const tokenHash = request.nextUrl.searchParams.get("token_hash");
   const type = request.nextUrl.searchParams.get("type") as EmailOtpType | null;
   const next = safeNextPath(request.nextUrl.searchParams.get("next"));
 
-  if (tokenHash && type && emailOtpTypes.has(type)) {
+  if (code) {
+    const supabase = await createServerSupabaseClient();
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (!error) {
+      return NextResponse.redirect(new URL(next, request.url));
+    }
+  } else if (tokenHash && type && emailOtpTypes.has(type)) {
     const supabase = await createServerSupabaseClient();
     const { error } = await supabase.auth.verifyOtp({
       type,

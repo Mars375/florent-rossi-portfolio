@@ -9,7 +9,6 @@ import {
 } from "react";
 import {
   parsePortfolioContent,
-  type Locale,
   type PortfolioContent,
 } from "../../content/schema";
 import { duplicateProject, reorderProjects } from "../../lib/content/editor";

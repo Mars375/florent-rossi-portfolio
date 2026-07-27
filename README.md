@@ -1,98 +1,103 @@
-# vinext-starter
+# Atelier Vif — portfolio vidéo
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+Portfolio bilingue FR/EN de direction artistique, construit avec Next.js pour
+Vercel. Le contenu public et le brouillon sont stockés comme documents JSON
+validés dans Supabase. Un seul compte administrateur peut modifier, prévisualiser
+et publier le site.
 
-## Prerequisites
+## Fonctionnalités
 
-- Node.js `>=22.13.0`
+- routes publiques `/fr`, `/en`, `/[locale]/about` et
+  `/[locale]/work/[slug]`;
+- boucles MP4/WebM au survol ou au focus, GIF de secours et affiche statique
+  sur mobile ou en réduction des animations;
+- films complets Vimeo, YouTube ou MP4;
+- éditeur bilingue protégé à `/admin`;
+- autosauvegarde du brouillon, aperçu privé, publication explicite;
+- téléversement direct vers Supabase Storage, sans transiter par Vercel;
+- import et export du document JSON complet.
 
-## Quick Start
+## Développement local
+
+Prérequis : Node.js 22.13 ou plus récent.
 
 ```bash
-npm install
+npm ci
+copy .env.example .env.local
 npm run dev
+```
+
+Variables requises :
+
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+ADMIN_EMAIL=m.rossiflorent@gmail.com
+```
+
+La clé publique Supabase peut être exposée au navigateur. Ne jamais ajouter une
+clé `service_role`, une clé secrète Supabase ou une clé Resend dans une variable
+`NEXT_PUBLIC_*`.
+
+Le site public utilise `content/default.json` comme repli si Supabase est
+indisponible. En production, les documents `draft` et `published` de la table
+`portfolio_documents` sont la source de vérité.
+
+## Commandes
+
+```bash
+npm test
+npm run typecheck
+npm run lint
 npm run build
+npm start
 ```
 
-This starter does not use `wrangler.jsonc`.
+## Supabase
 
-## Included Shape
+Les migrations sont versionnées dans `supabase/migrations/`. Elles créent la
+table de contenu, la publication atomique, les politiques RLS et le bucket
+public `portfolio-media`. Le bucket autorise JPG, PNG, WebP, GIF, MP4 et WebM,
+jusqu’à 25 Mo par fichier.
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+Projet de développement : `kzowrkfounzeytgtvndh` (`eu-west-3`).
 
-## Workspace Auth Headers
+## Déploiement Vercel
 
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
+1. Importer ce dépôt dans Vercel.
+2. Ajouter les quatre variables de `.env.example` dans les environnements
+   Preview et Production.
+3. Définir `NEXT_PUBLIC_SITE_URL` avec l’URL Vercel en Preview, puis le domaine
+   définitif en Production.
+4. Dans Supabase Auth, définir la même URL comme `Site URL` et ajouter
+   `https://domaine-final.example/auth/confirm?next=/admin` aux URL de
+   redirection autorisées.
+5. Déployer, puis vérifier `/fr`, `/en`, `/admin/login` et un téléversement
+   depuis l’éditeur.
 
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
+## Resend et e-mails de connexion
 
-Treat the full name as optional and fall back to email when it is absent:
+Le domaine expéditeur n’est volontairement pas configuré avant de connaître le
+domaine définitif du portfolio. Au lancement :
 
-```tsx
-import { headers } from "next/headers";
+1. Ajouter le domaine définitif du portfolio dans Resend.
+2. Ajouter dans le DNS les enregistrements SPF et DKIM retournés.
+3. Attendre que Resend affiche le domaine comme vérifié.
+4. Créer une clé Resend limitée à l’envoi et à ce domaine.
+5. Configurer le SMTP personnalisé de Supabase Auth avec l’hôte
+   `smtp.resend.com`, le port `465`, l’utilisateur `resend` et la clé Resend
+   comme mot de passe.
+6. Ajouter l’URL de rappel Vercel de production aux URL de redirection de
+   Supabase Auth.
 
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
+La route de confirmation accepte le flux PKCE standard et un modèle direct par
+`token_hash`. Si ce second modèle est utilisé, le lien du template Magic Link
+doit être :
 
-  const displayName = fullName ?? email;
-  // ...
-}
+```text
+{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
-
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+Le guide d’utilisation destiné au client est dans
+`docs/client-editor-guide.md`.

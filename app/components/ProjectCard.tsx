@@ -88,6 +88,8 @@ export function ProjectCard({
           onBlur={stopPreview}
           aria-label={`${viewLabel}: ${project.title[locale]}`}
         >
+          {/* The source is client-managed JSON and may use any HTTPS host. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={
               project.preview.type === "gif" && project.preview.url
