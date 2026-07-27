@@ -7,13 +7,20 @@ create table if not exists public.portfolio_documents (
 
 alter table public.portfolio_documents enable row level security;
 
+revoke all on table public.portfolio_documents from anon, authenticated;
+grant select on table public.portfolio_documents to anon;
+grant select, insert, update, delete on table public.portfolio_documents to authenticated;
+
+create index if not exists portfolio_documents_updated_by_idx
+on public.portfolio_documents (updated_by);
+
 create policy "Published portfolio is publicly readable"
 on public.portfolio_documents
 for select
 to anon, authenticated
 using (
   key = 'published'
-  or lower(coalesce(auth.jwt() ->> 'email', '')) = 'm.rossiflorent@gmail.com'
+  or lower(coalesce((select auth.jwt()) ->> 'email', '')) = 'm.rossiflorent@gmail.com'
 );
 
 create policy "Administrator can insert portfolio documents"
@@ -21,7 +28,7 @@ on public.portfolio_documents
 for insert
 to authenticated
 with check (
-  lower(coalesce(auth.jwt() ->> 'email', '')) = 'm.rossiflorent@gmail.com'
+  lower(coalesce((select auth.jwt()) ->> 'email', '')) = 'm.rossiflorent@gmail.com'
 );
 
 create policy "Administrator can update portfolio documents"
@@ -29,10 +36,10 @@ on public.portfolio_documents
 for update
 to authenticated
 using (
-  lower(coalesce(auth.jwt() ->> 'email', '')) = 'm.rossiflorent@gmail.com'
+  lower(coalesce((select auth.jwt()) ->> 'email', '')) = 'm.rossiflorent@gmail.com'
 )
 with check (
-  lower(coalesce(auth.jwt() ->> 'email', '')) = 'm.rossiflorent@gmail.com'
+  lower(coalesce((select auth.jwt()) ->> 'email', '')) = 'm.rossiflorent@gmail.com'
 );
 
 create policy "Administrator can delete portfolio documents"
@@ -40,7 +47,7 @@ on public.portfolio_documents
 for delete
 to authenticated
 using (
-  lower(coalesce(auth.jwt() ->> 'email', '')) = 'm.rossiflorent@gmail.com'
+  lower(coalesce((select auth.jwt()) ->> 'email', '')) = 'm.rossiflorent@gmail.com'
 );
 
 create or replace function public.publish_portfolio()
@@ -50,7 +57,7 @@ security invoker
 set search_path = ''
 as $$
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'm.rossiflorent@gmail.com' then
+  if lower(coalesce((select auth.jwt()) ->> 'email', '')) <> 'm.rossiflorent@gmail.com' then
     raise exception 'forbidden' using errcode = '42501';
   end if;
 
@@ -63,7 +70,7 @@ begin
   end if;
 
   insert into public.portfolio_documents (key, content, updated_by)
-  select 'published', content, auth.uid()
+  select 'published', content, (select auth.uid())
   from public.portfolio_documents
   where key = 'draft'
   on conflict (key) do update
@@ -73,7 +80,7 @@ begin
 end;
 $$;
 
-revoke all on function public.publish_portfolio() from public;
+revoke all on function public.publish_portfolio() from public, anon, service_role;
 grant execute on function public.publish_portfolio() to authenticated;
 
 insert into storage.buckets (
@@ -102,19 +109,13 @@ set public = excluded.public,
     file_size_limit = excluded.file_size_limit,
     allowed_mime_types = excluded.allowed_mime_types;
 
-create policy "Portfolio media is publicly readable"
-on storage.objects
-for select
-to anon, authenticated
-using (bucket_id = 'portfolio-media');
-
 create policy "Administrator can upload portfolio media"
 on storage.objects
 for insert
 to authenticated
 with check (
   bucket_id = 'portfolio-media'
-  and lower(coalesce(auth.jwt() ->> 'email', '')) = 'm.rossiflorent@gmail.com'
+  and lower(coalesce((select auth.jwt()) ->> 'email', '')) = 'm.rossiflorent@gmail.com'
 );
 
 create policy "Administrator can update portfolio media"
@@ -123,11 +124,11 @@ for update
 to authenticated
 using (
   bucket_id = 'portfolio-media'
-  and lower(coalesce(auth.jwt() ->> 'email', '')) = 'm.rossiflorent@gmail.com'
+  and lower(coalesce((select auth.jwt()) ->> 'email', '')) = 'm.rossiflorent@gmail.com'
 )
 with check (
   bucket_id = 'portfolio-media'
-  and lower(coalesce(auth.jwt() ->> 'email', '')) = 'm.rossiflorent@gmail.com'
+  and lower(coalesce((select auth.jwt()) ->> 'email', '')) = 'm.rossiflorent@gmail.com'
 );
 
 create policy "Administrator can delete portfolio media"
@@ -136,5 +137,5 @@ for delete
 to authenticated
 using (
   bucket_id = 'portfolio-media'
-  and lower(coalesce(auth.jwt() ->> 'email', '')) = 'm.rossiflorent@gmail.com'
+  and lower(coalesce((select auth.jwt()) ->> 'email', '')) = 'm.rossiflorent@gmail.com'
 );

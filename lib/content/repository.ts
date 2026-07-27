@@ -69,6 +69,7 @@ function supabaseStore(client: SupabaseClient): ContentStore {
       const { error } = await client.from("portfolio_documents").upsert({
         key: "draft",
         content,
+        updated_at: new Date().toISOString(),
         updated_by: user?.id ?? null,
       });
 
