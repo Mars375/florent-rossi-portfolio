@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import test from "node:test";
+import { generateMetadata as generateAboutMetadata } from "../app/[locale]/about/page";
 import content from "../content/default.json";
 import { parsePortfolioContent } from "../content/schema";
 
@@ -64,4 +65,21 @@ test("keeps static public and admin branding personal", async () => {
   assert.match(renderedCopy[2], /Florent Rossi/);
   assert.match(renderedCopy[3], /florent-rossi-content\.json/);
   assert.doesNotMatch(renderedCopy.join("\n"), /Atelier Vif|Studio & Contact/);
+});
+
+test("localizes about metadata without duplicating Florent Rossi", async () => {
+  const metadataForLocale = generateAboutMetadata as unknown as (props: {
+    params: Promise<{ locale: string }>;
+  }) => Promise<{ title?: string }>;
+
+  const english = await metadataForLocale({
+    params: Promise.resolve({ locale: "en" }),
+  });
+  const french = await metadataForLocale({
+    params: Promise.resolve({ locale: "fr" }),
+  });
+
+  assert.equal(english.title, "About");
+  assert.equal(french.title, "À propos");
+  assert.doesNotMatch(`${english.title} ${french.title}`, /Florent Rossi/);
 });
