@@ -9,6 +9,10 @@ function publicConfig() {
   return url && publishableKey ? { url, publishableKey } : null;
 }
 
+export function isPublicSupabaseConfigured() {
+  return publicConfig() !== null;
+}
+
 export function createPublicSupabaseClient() {
   const config = publicConfig();
   if (!config) return null;

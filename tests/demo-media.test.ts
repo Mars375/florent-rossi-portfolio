@@ -21,10 +21,24 @@ const generatedNames = [
   "about-poster.jpg",
 ];
 
+test("requires an ffmpeg executable before inspecting generated media", () => {
+  assert.throws(
+    () => requireFfmpegPath(null),
+    /ffmpeg-static did not provide an executable path/,
+  );
+});
+
+function requireFfmpegPath(path: string | null): string {
+  assert.ok(path, "ffmpeg-static did not provide an executable path");
+  return path;
+}
+
 function inspectVideo(videoPath: string) {
-  const result = spawnSync(ffmpegPath, ["-hide_banner", "-i", videoPath], {
-    encoding: "utf8",
-  });
+  const result = spawnSync(
+    requireFfmpegPath(ffmpegPath),
+    ["-hide_banner", "-i", videoPath],
+    { encoding: "utf8" },
+  );
 
   assert.equal(result.status, 1, result.stderr);
   return `${result.stdout}\n${result.stderr}`;

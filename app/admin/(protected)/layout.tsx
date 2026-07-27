@@ -2,7 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { isAdminEmail } from "../../../lib/auth";
-import { createServerSupabaseClient } from "../../../lib/supabase/server";
+import {
+  createServerSupabaseClient,
+  isPublicSupabaseConfigured,
+} from "../../../lib/supabase/server";
 import { signOutAction } from "../auth-actions";
 
 export const dynamic = "force-dynamic";
@@ -12,6 +15,8 @@ export default async function ProtectedAdminLayout({
 }: {
   children: ReactNode;
 }) {
+  if (!isPublicSupabaseConfigured()) redirect("/admin/login");
+
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
