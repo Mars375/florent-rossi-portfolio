@@ -1,9 +1,7 @@
-export default function AdminPage() {
-  return (
-    <main className="admin-dashboard">
-      <p className="section-label">Tableau de bord</p>
-      <h1>Contenu du portfolio</h1>
-      <p>L’éditeur de brouillon est en cours de préparation.</p>
-    </main>
-  );
+import { getDraftContent } from "../../../lib/content/repository";
+import { AdminEditor } from "../AdminEditor";
+
+export default async function AdminPage() {
+  const content = await getDraftContent();
+  return <AdminEditor initialContent={content} />;
 }
