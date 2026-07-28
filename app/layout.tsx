@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { documentLanguage, REQUEST_LOCALE_HEADER } from "../lib/request-locale";
-import { getSiteUrl } from "../lib/site-url";
+import { getCanonicalSiteUrl } from "../lib/site-url";
 import { themeBootstrapScript } from "../lib/theme";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const baseUrl = getSiteUrl();
+  const baseUrl = getCanonicalSiteUrl();
   const title = "Florent Rossi — Art Director";
   const description =
     "Florent Rossi is a Paris-based art director working across culture, music and fashion, looking for a permanent position.";

@@ -1806,6 +1806,11 @@ figcaption {
 }
 
 @media (max-width: 850px) {
+  .legal-page h1 {
+    font-size: clamp(44px, 14vw, 68px);
+    overflow-wrap: anywhere;
+  }
+
   .legal-sections section {
     grid-template-columns: 36px 1fr;
   }

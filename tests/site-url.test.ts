@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { register } from "node:module";
 import test from "node:test";
 import { generateMetadata as generateHomeMetadata } from "../app/[locale]/page";
 import { generateMetadata as generateAboutMetadata } from "../app/[locale]/about/page";
@@ -15,6 +16,31 @@ import {
 function href(value: unknown): string {
   assert.ok(value);
   return value instanceof URL ? value.href : String(value);
+}
+
+function first(value: unknown): unknown {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+async function loadRootMetadataGenerator() {
+  const cssLoader = `
+    export async function load(url, context, nextLoad) {
+      if (url.endsWith(".css")) {
+        return {
+          format: "module",
+          shortCircuit: true,
+          source: "export default {};",
+        };
+      }
+      return nextLoad(url, context);
+    }
+  `;
+  register(
+    `data:text/javascript,${encodeURIComponent(cssLoader)}`,
+    import.meta.url,
+  );
+
+  return (await import("../app/layout")).generateMetadata;
 }
 
 test("uses florentrossi.com as the safe canonical production origin", () => {
@@ -35,8 +61,8 @@ test("uses florentrossi.com as the safe canonical production origin", () => {
 });
 
 test("builds exact FR and EN canonical alternates", () => {
-  const home = localizedAlternates("fr", "", "");
-  const project = localizedAlternates("en", "/work/afterdark", "");
+  const home = localizedAlternates("fr");
+  const project = localizedAlternates("en", "/work/afterdark");
 
   assert.equal(href(home?.canonical), "https://florentrossi.com/fr");
   assert.equal(href(home?.languages?.fr), "https://florentrossi.com/fr");
@@ -51,28 +77,51 @@ test("builds exact FR and EN canonical alternates", () => {
   );
 });
 
-test("public metadata exposes canonical localized routes on florentrossi.com", async () => {
+test("public canonicals pin florentrossi.com despite legacy or preview environment origins", async () => {
   const previous = process.env.NEXT_PUBLIC_SITE_URL;
-  process.env.NEXT_PUBLIC_SITE_URL = "https://florentrossi.com";
+  const generateRootMetadata = await loadRootMetadataGenerator();
 
   try {
-    const [home, about, work] = await Promise.all([
-      generateHomeMetadata({ params: Promise.resolve({ locale: "fr" }) }),
-      generateAboutMetadata({ params: Promise.resolve({ locale: "en" }) }),
-      generateWorkMetadata({
-        params: Promise.resolve({ locale: "fr", slug: "afterdark" }),
-      }),
-    ]);
+    for (const environmentOrigin of [
+      "https://florentrossi.fr",
+      "https://portfolio-git-preview.vercel.app",
+    ]) {
+      process.env.NEXT_PUBLIC_SITE_URL = environmentOrigin;
 
-    assert.equal(href(home.alternates?.canonical), "https://florentrossi.com/fr");
-    assert.equal(
-      href(about.alternates?.canonical),
-      "https://florentrossi.com/en/about",
-    );
-    assert.equal(
-      href(work.alternates?.canonical),
-      "https://florentrossi.com/fr/work/afterdark",
-    );
+      const [root, home, about, work] = await Promise.all([
+        generateRootMetadata(),
+        generateHomeMetadata({ params: Promise.resolve({ locale: "fr" }) }),
+        generateAboutMetadata({ params: Promise.resolve({ locale: "en" }) }),
+        generateWorkMetadata({
+          params: Promise.resolve({ locale: "fr", slug: "afterdark" }),
+        }),
+      ]);
+
+      assert.equal(href(root.metadataBase), "https://florentrossi.com/");
+      const openGraphImage = first(root.openGraph?.images);
+      assert.ok(openGraphImage && typeof openGraphImage === "object");
+      assert.ok("url" in openGraphImage);
+      assert.equal(
+        href(openGraphImage.url),
+        "https://florentrossi.com/og.png",
+      );
+      assert.equal(
+        href(first(root.twitter?.images)),
+        "https://florentrossi.com/og.png",
+      );
+      assert.equal(
+        href(home.alternates?.canonical),
+        "https://florentrossi.com/fr",
+      );
+      assert.equal(
+        href(about.alternates?.canonical),
+        "https://florentrossi.com/en/about",
+      );
+      assert.equal(
+        href(work.alternates?.canonical),
+        "https://florentrossi.com/fr/work/afterdark",
+      );
+    }
   } finally {
     if (previous === undefined) {
       delete process.env.NEXT_PUBLIC_SITE_URL;

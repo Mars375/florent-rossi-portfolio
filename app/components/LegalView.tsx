@@ -2,6 +2,45 @@ import type { Locale, PortfolioContent } from "../../content/schema";
 import { FooterLinks } from "./FooterLinks";
 import { SiteHeader } from "./SiteHeader";
 
+type LegalSection =
+  | {
+      id:
+        | "publisher"
+        | "intellectual-property"
+        | "external-links"
+        | "controller"
+        | "data"
+        | "purposes"
+        | "providers"
+        | "retention"
+        | "storage"
+        | "videos";
+      kind: "text";
+      title: string;
+      text: string;
+    }
+  | {
+      id: "contact";
+      kind: "email";
+      title: string;
+      text: string;
+      href: string;
+    }
+  | {
+      id: "host";
+      kind: "host";
+      title: string;
+      text: string;
+      href: string;
+    }
+  | {
+      id: "rights";
+      kind: "cnil";
+      title: string;
+      text: string;
+      href: string;
+    };
+
 export function LegalView({
   locale,
   content,
@@ -14,27 +53,92 @@ export function LegalView({
   routeBase?: string;
 }) {
   const copy = content.legal[locale];
-  const sections =
+  const sections: LegalSection[] =
     kind === "legal"
       ? [
-          [copy.publisherLabel, copy.publisherText],
-          [copy.contactLabel, content.site.email],
-          [
-            copy.hostLabel,
-            `${content.legal.host.name}\n${content.legal.host.address}`,
-          ],
-          [copy.intellectualPropertyLabel, copy.intellectualPropertyText],
-          [copy.externalLinksLabel, copy.externalLinksText],
+          {
+            id: "publisher",
+            kind: "text",
+            title: copy.publisherLabel,
+            text: copy.publisherText,
+          },
+          {
+            id: "contact",
+            kind: "email",
+            title: copy.contactLabel,
+            text: content.site.email,
+            href: `mailto:${content.site.email}`,
+          },
+          {
+            id: "host",
+            kind: "host",
+            title: copy.hostLabel,
+            text: `${content.legal.host.name}\n${content.legal.host.address}`,
+            href: content.legal.host.url,
+          },
+          {
+            id: "intellectual-property",
+            kind: "text",
+            title: copy.intellectualPropertyLabel,
+            text: copy.intellectualPropertyText,
+          },
+          {
+            id: "external-links",
+            kind: "text",
+            title: copy.externalLinksLabel,
+            text: copy.externalLinksText,
+          },
         ]
       : [
-          [copy.controllerLabel, copy.controllerText],
-          [copy.dataLabel, copy.dataText],
-          [copy.purposesLabel, copy.purposesText],
-          [copy.providersLabel, copy.providersText],
-          [copy.retentionLabel, copy.retentionText],
-          [copy.rightsLabel, copy.rightsText],
-          [copy.storageLabel, copy.storageText],
-          [copy.videosLabel, copy.videosText],
+          {
+            id: "controller",
+            kind: "text",
+            title: copy.controllerLabel,
+            text: copy.controllerText,
+          },
+          {
+            id: "data",
+            kind: "text",
+            title: copy.dataLabel,
+            text: copy.dataText,
+          },
+          {
+            id: "purposes",
+            kind: "text",
+            title: copy.purposesLabel,
+            text: copy.purposesText,
+          },
+          {
+            id: "providers",
+            kind: "text",
+            title: copy.providersLabel,
+            text: copy.providersText,
+          },
+          {
+            id: "retention",
+            kind: "text",
+            title: copy.retentionLabel,
+            text: copy.retentionText,
+          },
+          {
+            id: "rights",
+            kind: "cnil",
+            title: copy.rightsLabel,
+            text: copy.rightsText,
+            href: "https://www.cnil.fr/",
+          },
+          {
+            id: "storage",
+            kind: "text",
+            title: copy.storageLabel,
+            text: copy.storageText,
+          },
+          {
+            id: "videos",
+            kind: "text",
+            title: copy.videosLabel,
+            text: copy.videosText,
+          },
         ];
 
   return (
@@ -49,22 +153,19 @@ export function LegalView({
           <p>{kind === "legal" ? copy.legalIntro : copy.privacyIntro}</p>
         </header>
         <div className="legal-sections">
-          {sections.map(([title, text], index) => (
-            <section key={title}>
+          {sections.map((section, index) => (
+            <section key={section.id}>
               <p className="section-label">
                 {String(index + 1).padStart(2, "0")}
               </p>
-              <h2>{title}</h2>
-              {title === copy.contactLabel ? (
-                <a href={`mailto:${content.site.email}`}>{text}</a>
+              <h2>{section.title}</h2>
+              {section.kind === "email" ? (
+                <a href={section.href}>{section.text}</a>
               ) : (
-                <p>{text}</p>
+                <p>{section.text}</p>
               )}
-              {title === copy.hostLabel ? (
-                <a href={content.legal.host.url}>{content.legal.host.url}</a>
-              ) : null}
-              {title === copy.rightsLabel ? (
-                <a href="https://www.cnil.fr/">https://www.cnil.fr/</a>
+              {section.kind === "host" || section.kind === "cnil" ? (
+                <a href={section.href}>{section.href}</a>
               ) : null}
             </section>
           ))}

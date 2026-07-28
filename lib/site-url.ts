@@ -3,6 +3,10 @@ import type { Locale } from "../content/schema";
 
 export const PRODUCTION_SITE_URL = "https://florentrossi.com";
 
+export function getCanonicalSiteUrl(): URL {
+  return new URL(PRODUCTION_SITE_URL);
+}
+
 export function getSiteUrl(
   value = process.env.NEXT_PUBLIC_SITE_URL,
 ): URL {
@@ -27,9 +31,8 @@ export function getSiteUrl(
 export function localizedAlternates(
   locale: Locale,
   path = "",
-  value?: string,
 ): Metadata["alternates"] {
-  const base = getSiteUrl(value);
+  const base = getCanonicalSiteUrl();
   const suffix = path === "" || path.startsWith("/") ? path : `/${path}`;
 
   return {
