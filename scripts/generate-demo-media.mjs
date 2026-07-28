@@ -52,12 +52,25 @@ function escapeRegularExpression(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function isProcessAlive(pid) {
+  if (!Number.isSafeInteger(pid) || pid <= 0) {
+    return true;
+  }
+
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return !(error && typeof error === "object" && "code" in error && error.code === "ESRCH");
+  }
+}
+
 async function removeStaleTemporaryOutput(outputPath) {
   const extension = extname(outputPath);
   const name = basename(outputPath, extension);
   const directory = dirname(outputPath);
   const temporaryName = new RegExp(
-    `^${escapeRegularExpression(`.${name}-`)}\\d+-\\d+${escapeRegularExpression(extension)}$`,
+    `^${escapeRegularExpression(`.${name}-`)}(\\d+)-\\d+${escapeRegularExpression(extension)}$`,
   );
 
   let entries;
@@ -72,8 +85,9 @@ async function removeStaleTemporaryOutput(outputPath) {
 
   await Promise.all(
     entries
-      .filter((entry) => temporaryName.test(entry))
-      .map((entry) => rm(join(directory, entry), { force: true })),
+      .map((entry) => ({ entry, match: entry.match(temporaryName) }))
+      .filter(({ match }) => match && !isProcessAlive(Number(match[1])))
+      .map(({ entry }) => rm(join(directory, entry), { force: true })),
   );
 }
 

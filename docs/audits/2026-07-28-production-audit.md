@@ -73,7 +73,10 @@ suivi, sans être qualifiés de vulnérabilité produit.
 - **Cause racine :** FFmpeg, Sharp et `copyFile` écrivaient directement dans
   les chemins suivis.
 - **Correction appliquée :** `scripts/generate-demo-media.mjs` écrit chaque
-  sortie dans un temporaire adjacent puis renomme seulement après succès.
+  sortie dans un temporaire adjacent puis renomme seulement après succès. À la
+  reprise, il ne retire qu'un temporaire de destination connue dont le PID
+  encodé est définitivement absent (`ESRCH`) ; un PID vivant, non autorisé ou
+  indéterminé est conservé afin de ne pas interrompre une génération concurrente.
 - **Validation :** test d'interruption rouge puis vert dans
   `tests/demo-media.test.ts`; suite post-correction 110/110, ESLint,
   TypeScript et build verts.

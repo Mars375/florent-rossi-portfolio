@@ -178,6 +178,41 @@ async function waitForTemporaryOutput(directory: string, timeoutMs = 5_000) {
   throw new Error("FFmpeg did not start writing its adjacent temporary output");
 }
 
+async function waitForChildTemporaryOutput(directory: string, pid: number, timeoutMs = 5_000) {
+  const deadline = Date.now() + timeoutMs;
+  const pattern = new RegExp(`^\\.afterdark-loop-${pid}-\\d+\\.mp4$`);
+  while (Date.now() < deadline) {
+    const names = await readdir(directory);
+    if (names.some((name) => pattern.test(name))) return;
+    await new Promise((resolveDelay) => setTimeout(resolveDelay, 25));
+  }
+  throw new Error("The concurrent generator did not begin writing its own temporary output");
+}
+
+test("a concurrent start preserves a temporary owned by a live process", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "florent-media-concurrency-"));
+  const mediaDirectory = join(directory, "public", "media", "florent");
+  const activeTemporary = join(mediaDirectory, `.afterdark-loop-${process.pid}-123456.mp4`);
+  await mkdir(mediaDirectory, { recursive: true });
+  await writeFile(activeTemporary, "owned by the active test process");
+
+  const child = spawn(process.execPath, [resolve("scripts/generate-demo-media.mjs")], {
+    cwd: directory,
+    stdio: "ignore",
+  });
+  const exited = new Promise<void>((resolveChild) => child.once("exit", () => resolveChild()));
+
+  try {
+    assert.ok(child.pid);
+    await waitForChildTemporaryOutput(mediaDirectory, child.pid);
+    assert.equal(await readFile(activeTemporary, "utf8"), "owned by the active test process");
+  } finally {
+    child.kill("SIGKILL");
+    await exited;
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
 test("SIGKILL preserves the destination and the next start removes its stale adjacent temporary", async () => {
   const directory = await mkdtemp(join(tmpdir(), "florent-media-generation-"));
   const loopPath = join(directory, "public", "media", "florent", "afterdark-loop.mp4");
