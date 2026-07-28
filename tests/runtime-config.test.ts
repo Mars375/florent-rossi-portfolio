@@ -27,15 +27,18 @@ test("keeps Turbopack scoped to this repository", async () => {
   assert.match(nextConfig, /root:\s*process\.cwd\(\)/);
 });
 
-test("caches versioned portfolio media immutably at the edge", async () => {
-  const nextConfig = await readFile("next.config.ts", "utf8");
-
-  assert.match(nextConfig, /source:\s*["']\/media\/florent\/:path\*["']/);
-  assert.match(nextConfig, /key:\s*["']Cache-Control["']/);
-  assert.match(
-    nextConfig,
-    /value:\s*["']public, max-age=31536000, immutable["']/,
+test("keeps stable portfolio media cacheable but revalidable", async () => {
+  const { default: nextConfig } = await import("../next.config");
+  const rules = await nextConfig.headers?.();
+  const mediaRule = rules?.find(
+    (rule) => rule.source === "/media/florent/:path*",
   );
+  const cacheControl = mediaRule?.headers.find(
+    (header) => header.key === "Cache-Control",
+  )?.value;
+
+  assert.equal(cacheControl, "public, max-age=3600, must-revalidate");
+  assert.doesNotMatch(cacheControl ?? "", /immutable/);
 });
 
 test("excludes isolated worktrees from repository-wide linting", async () => {
