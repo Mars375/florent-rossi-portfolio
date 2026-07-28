@@ -241,9 +241,10 @@ Le 28-07-2026, les `HEAD` de `afterdark-poster.jpg`, `afterdark-preview.gif` et 
 - **Preuve reproductible :** les trois réponses de production ont `Cache-Control: public, max-age=0, must-revalidate`, sans cache immuable. Les chemins contrôlés sont les assets locaux sous `/media/florent/*`.
 - **Impact :** les affiches et aperçus renouvellent une requête de validation au lieu d’être servis directement depuis le cache navigateur, ce qui dégrade les visites répétées et les réseaux à latence élevée.
 - **Cause racine :** `next.config.ts` ne définissait aucune règle `headers()` pour ces fichiers ; Vercel applique donc sa politique révalidante par défaut.
-- **Test rouge :** `caches versioned portfolio media immutably at the edge` dans `tests/runtime-config.test.ts` échouait car la règle `/media/florent/:path*` et sa valeur `Cache-Control` étaient absentes.
-- **Correction minimale :** la configuration Next renvoie désormais `Cache-Control: public, max-age=31536000, immutable` uniquement pour `/media/florent/:path*`.
-- **Validation :** le même test passe après correction et le build de production compile. La production non déployée conserve volontairement l’ancien header jusqu’à l’intégration autorisée ; le `HEAD` live post-déploiement reste à effectuer.
+- **Correction initiale rejetée en revue :** une politique `max-age=31536000, immutable` aurait été dangereuse. Les noms locaux (`<slug>-poster.jpg`, `-preview.gif`, `-loop.mp4`) sont stables et le générateur peut les remplacer : ils ne sont pas fingerprintés.
+- **Test rouge de remédiation :** `keeps stable portfolio media cacheable but revalidable` échouait contre cette valeur immutable et exige une règle compilée sans `immutable`.
+- **Correction minimale finale :** la configuration Next renvoie `Cache-Control: public, max-age=3600, must-revalidate` uniquement pour `/media/florent/:path*`. Le navigateur peut réutiliser l’asset une heure, puis doit valider sa version avant de le servir de nouveau ; aucun gain de performance live n’est revendiqué avant déploiement.
+- **Validation :** le test de règle passe, le build produit dans `.next/routes-manifest.json` exactement la règle et cette valeur. La production non déployée conserve volontairement l’ancien header jusqu’à l’intégration autorisée ; le `HEAD` live post-déploiement reste à effectuer.
 
 ### Lighthouse — médianes de trois exécutions
 
@@ -264,6 +265,6 @@ Le contrôle Browser live (DOM avant/après hover, réutilisation de l’éléme
 
 ### Gates Tâche 4
 
-- Rouge observé : `node node_modules/tsx/dist/cli.mjs --test tests/runtime-config.test.ts` — 3/4 passés, 1 échec attendu avant correction.
+- Rouges observés : absence initiale de règle, puis règle unsafe `max-age=31536000, immutable` lors de la revue ; chacune échoue dans `runtime-config` pour le motif attendu.
 - Tests après correction : `runtime-config` 4/4 et `project-card` 9/9 passés ; TypeScript, ESLint ciblé et `next build` passés.
 - Suite complète : 112 passés, 0 échec (235,951 s) ; ESLint, TypeScript, `next build` et `git diff --check` réussis.
