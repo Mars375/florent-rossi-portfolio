@@ -7,6 +7,7 @@ import {
   saveDraftContent,
 } from "../../lib/content/repository";
 import {
+  portfolioErrorMessage,
   publishDraftWithRepository,
   type ActionResult,
 } from "../../lib/content/editor";
@@ -36,10 +37,7 @@ export async function saveDraftAction(value: unknown): Promise<ActionResult> {
   } catch (error) {
     return {
       ok: false,
-      message:
-        error instanceof Error
-          ? `Enregistrement impossible : ${error.message}`
-          : "Enregistrement impossible.",
+      message: `Enregistrement impossible : ${portfolioErrorMessage(error)}`,
     };
   }
 }

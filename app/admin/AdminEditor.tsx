@@ -14,6 +14,7 @@ import {
 import {
   createSerialTaskQueue,
   duplicateProject,
+  portfolioErrorMessage,
   reorderProjects,
 } from "../../lib/content/editor";
 import { publishDraftAction, saveDraftAction } from "./actions";
@@ -130,11 +131,7 @@ export function AdminEditor({
       setMessage("Fichier importé. Enregistrement du brouillon en cours.");
     } catch (error) {
       setSaveStatus("error");
-      setMessage(
-        error instanceof Error
-          ? `Import refusé : ${error.message}`
-          : "Import refusé : JSON invalide.",
-      );
+      setMessage(`Import refusé : ${portfolioErrorMessage(error)}`);
     }
   };
 

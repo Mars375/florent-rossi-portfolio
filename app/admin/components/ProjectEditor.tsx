@@ -75,11 +75,21 @@ export function ProjectEditor({
             />
           </label>
           <label>
-            URL du projet
+            Adresse de la page
             <input
               value={project.slug}
+              pattern="[a-z0-9-]+"
+              placeholder="afterdark"
+              title="Lettres minuscules, chiffres et tirets uniquement"
+              aria-describedby={`project-${index}-slug-help`}
               onChange={(event) => update("slug", event.target.value)}
             />
+            <small
+              className="admin-field-hint"
+              id={`project-${index}-slug-help`}
+            >
+              Exemple : afterdark. Ne collez pas de lien Vimeo ou YouTube ici.
+            </small>
           </label>
           <label>
             Année
@@ -265,10 +275,17 @@ export function ProjectEditor({
             </select>
           </label>
           <label>
-            URL du film complet
+            Lien du film complet
             <input
               type="url"
               value={project.fullVideo.url}
+              placeholder={
+                project.fullVideo.provider === "vimeo"
+                  ? "https://vimeo.com/967736424"
+                  : project.fullVideo.provider === "youtube"
+                    ? "https://youtu.be/XXXXXXXXXXX"
+                    : "https://cdn.example.com/film.mp4"
+              }
               onChange={(event) =>
                 update("fullVideo", {
                   ...project.fullVideo,
@@ -276,6 +293,10 @@ export function ProjectEditor({
                 })
               }
             />
+            <small className="admin-field-hint">
+              Collez ici le lien Vimeo, YouTube ou MP4 correspondant à
+              l’hébergeur sélectionné.
+            </small>
           </label>
         </div>
       </section>

@@ -1385,6 +1385,15 @@ figcaption {
   text-transform: none;
 }
 
+.admin-field-hint {
+  color: var(--muted-text);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.4;
+  text-transform: none;
+}
+
 .admin-form-section textarea,
 .admin-localized-field textarea {
   min-height: 94px;

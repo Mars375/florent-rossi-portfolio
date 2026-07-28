@@ -3,6 +3,7 @@ import {
   type PortfolioContent,
   type Project,
 } from "../../content/schema";
+import { ZodError } from "zod";
 
 export type ActionResult = {
   ok: boolean;
@@ -12,6 +13,25 @@ export type ActionResult = {
 export type DraftPublisher = {
   publish(content: PortfolioContent): Promise<void>;
 };
+
+export function portfolioErrorMessage(error: unknown): string {
+  if (error instanceof ZodError) {
+    const issue = error.issues[0];
+    const [section, projectIndex, field] = issue?.path ?? [];
+
+    if (
+      section === "projects" &&
+      typeof projectIndex === "number" &&
+      field === "slug"
+    ) {
+      return `Projet ${projectIndex + 1} — l’adresse de la page accepte seulement des lettres minuscules, des chiffres et des tirets. Pour Vimeo ou YouTube, utilisez « Lien du film complet ».`;
+    }
+
+    return issue?.message ?? "Le contenu contient une valeur invalide.";
+  }
+
+  return error instanceof Error ? error.message : "Erreur inconnue.";
+}
 
 export function createSerialTaskQueue() {
   let tail: Promise<void> = Promise.resolve();
@@ -97,10 +117,7 @@ export async function publishDraftWithRepository(
   } catch (error) {
     return {
       ok: false,
-      message:
-        error instanceof Error
-          ? `Publication impossible : ${error.message}`
-          : "Publication impossible.",
+      message: `Publication impossible : ${portfolioErrorMessage(error)}`,
     };
   }
 }

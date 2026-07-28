@@ -20,6 +20,24 @@ test("publishing validates the draft before invoking storage", async () => {
   assert.equal(publishCalls, 0);
 });
 
+test("publishing explains when a Vimeo link was pasted into the page address", async () => {
+  const invalidDraft = structuredClone(defaultContent);
+  invalidDraft.projects[0].slug =
+    "https://vimeo.com/967736424?turnstile=temporary";
+
+  const result = await publishDraftWithRepository(invalidDraft, {
+    async publish() {
+      assert.fail("invalid content must not be published");
+    },
+  });
+
+  assert.deepEqual(result, {
+    ok: false,
+    message:
+      "Publication impossible : Projet 1 — l’adresse de la page accepte seulement des lettres minuscules, des chiffres et des tirets. Pour Vimeo ou YouTube, utilisez « Lien du film complet ».",
+  });
+});
+
 test("publishing passes the validated document to one atomic operation", async () => {
   let publishedName = "";
   const result = await publishDraftWithRepository(defaultContent, {
