@@ -436,14 +436,38 @@ a:focus-visible {
   letter-spacing: 0.02em;
 }
 
-.footer-meta,
-.contact-footer > div {
-  display: flex;
-  justify-content: space-between;
+.utility-footer {
+  display: grid;
+  grid-template-columns: auto minmax(180px, 1fr) auto auto;
   gap: 30px;
-  margin-top: 110px;
+  align-items: end;
+  width: 100%;
+  padding-top: 28px;
+  border-top: 1px solid currentColor;
   font-size: 11px;
   letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.utility-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.utility-footer nav:nth-of-type(2) {
+  justify-content: end;
+}
+
+.utility-footer.is-compact {
+  width: min(100% - 48px, 1540px);
+  margin: 100px auto 0;
+  padding-bottom: 30px;
+}
+
+.giant-footer > .utility-footer,
+.contact-footer > .utility-footer {
+  margin-top: 110px;
 }
 
 /* Case study */
@@ -878,10 +902,14 @@ figcaption {
     font-size: 22vw;
   }
 
-  .footer-meta,
-  .contact-footer > div {
-    display: grid;
-    margin-top: 70px;
+  .utility-footer,
+  .utility-footer.is-compact {
+    grid-template-columns: 1fr;
+    width: min(100% - 28px, 720px);
+  }
+
+  .utility-footer nav:nth-of-type(2) {
+    justify-content: start;
   }
 
   .case-hero h1 {

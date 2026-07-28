@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Locale, PortfolioContent } from "../../content/schema";
+import { FooterLinks } from "./FooterLinks";
 import { ProjectCard } from "./ProjectCard";
 import { SiteHeader } from "./SiteHeader";
 
@@ -70,13 +71,7 @@ export function PortfolioHome({
         >
           {content.site.email.toUpperCase()}
         </a>
-        <div className="footer-meta">
-          <span>{content.site.location[locale].toUpperCase()}</span>
-          <span>
-            {content.site.socials.map((social) => social.label).join(" / ")}
-          </span>
-          <span>{content.site.copyright.toUpperCase()}</span>
-        </div>
+        <FooterLinks locale={locale} content={content} routeBase={routeBase} />
       </footer>
     </main>
   );

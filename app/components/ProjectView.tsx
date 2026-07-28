@@ -4,6 +4,7 @@ import type {
   PortfolioContent,
   Project,
 } from "../../content/schema";
+import { FooterLinks } from "./FooterLinks";
 import { SiteHeader } from "./SiteHeader";
 import { VideoEmbed } from "./VideoEmbed";
 
@@ -119,6 +120,12 @@ export function ProjectView({
             {labels.next}: {next.title[locale]} →
           </Link>
         </nav>
+        <FooterLinks
+          locale={locale}
+          content={content}
+          routeBase={routeBase}
+          compact
+        />
       </article>
     </main>
   );

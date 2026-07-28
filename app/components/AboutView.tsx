@@ -1,4 +1,5 @@
 import type { Locale, PortfolioContent } from "../../content/schema";
+import { FooterLinks } from "./FooterLinks";
 import { SiteHeader } from "./SiteHeader";
 
 export function AboutView({
@@ -98,19 +99,7 @@ export function AboutView({
         >
           {content.site.email.toUpperCase()}
         </a>
-        <div>
-          {content.site.socials.map((social) => (
-            <a
-              key={social.label}
-              href={social.url}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {social.label.toUpperCase()}
-            </a>
-          ))}
-          <span>{content.site.location[locale].toUpperCase()}</span>
-        </div>
+        <FooterLinks locale={locale} content={content} routeBase={routeBase} />
       </footer>
     </main>
   );
