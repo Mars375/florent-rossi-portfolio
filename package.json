@@ -9,7 +9,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "tsx --test tests/**/*.test.ts",
+    "test": "tsx --test tests/**/*.test.ts tests/**/*.test.tsx",
     "generate:media": "node scripts/generate-demo-media.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "typecheck": "tsc --noEmit"
