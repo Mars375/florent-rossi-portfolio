@@ -28,8 +28,18 @@ test("renders only the static poster before an eligible interaction", () => {
   assert.match(markup, /En lecture 00:03/);
 });
 
-async function renderInteractiveProjectCard(projectToRender = project) {
+async function renderInteractiveProjectCard(
+  projectToRender = project,
+  {
+    reducedMotion = false,
+    play = () => Promise.resolve(),
+  }: {
+    reducedMotion?: boolean;
+    play?: () => Promise<void>;
+  } = {},
+) {
   const window = new Window({ url: "http://localhost" });
+  const media = { pauseCalls: 0, playCalls: 0 };
   const globalValues = {
     window,
     self: window,
@@ -56,12 +66,17 @@ async function renderInteractiveProjectCard(projectToRender = project) {
   }
   window.matchMedia = (() =>
     ({
-      matches: false,
+      matches: reducedMotion,
       addEventListener() {},
       removeEventListener() {},
     })) as unknown as typeof window.matchMedia;
-  window.HTMLMediaElement.prototype.play = () => Promise.resolve();
-  window.HTMLMediaElement.prototype.pause = () => {};
+  window.HTMLMediaElement.prototype.play = () => {
+    media.playCalls += 1;
+    return play();
+  };
+  window.HTMLMediaElement.prototype.pause = () => {
+    media.pauseCalls += 1;
+  };
 
   const container = window.document.createElement("div");
   window.document.body.append(container);
@@ -81,6 +96,7 @@ async function renderInteractiveProjectCard(projectToRender = project) {
 
   return {
     container,
+    media,
     window,
     async cleanup() {
       await act(async () => {
@@ -112,6 +128,130 @@ async function focusWithKeyboard(
     ).focus();
   });
 }
+
+async function hoverWithMouse(
+  rendered: Awaited<ReturnType<typeof renderInteractiveProjectCard>>,
+) {
+  await act(async () => {
+    const pointerOver = new rendered.window.Event("pointerover", {
+      bubbles: true,
+    });
+    Object.defineProperty(pointerOver, "pointerType", { value: "mouse" });
+    rendered.container.querySelector(".project-media")?.dispatchEvent(pointerOver);
+  });
+}
+
+async function leaveWithMouse(
+  rendered: Awaited<ReturnType<typeof renderInteractiveProjectCard>>,
+) {
+  await act(async () => {
+    const pointerOut = new rendered.window.Event("pointerout", {
+      bubbles: true,
+    });
+    Object.defineProperty(pointerOut, "pointerType", { value: "mouse" });
+    rendered.container.querySelector(".project-media")?.dispatchEvent(pointerOut);
+  });
+}
+
+test("mouse pointer entry plays and reuses the lazy video before pausing on exit", async () => {
+  const rendered = await renderInteractiveProjectCard();
+
+  try {
+    assert.equal(rendered.container.querySelector("video"), null);
+
+    await hoverWithMouse(rendered);
+    const firstVideo = rendered.container.querySelector("video");
+    assert.equal(firstVideo?.classList.contains("is-visible"), true);
+    assert.equal(rendered.media.playCalls, 1);
+
+    await leaveWithMouse(rendered);
+    assert.equal(firstVideo?.classList.contains("is-visible"), false);
+    assert.equal(rendered.media.pauseCalls, 1);
+
+    await hoverWithMouse(rendered);
+    assert.equal(rendered.container.querySelector("video"), firstVideo);
+    assert.equal(rendered.media.playCalls, 2);
+  } finally {
+    await rendered.cleanup();
+  }
+});
+
+test("reduced motion keeps the interactive card poster-only", async () => {
+  const rendered = await renderInteractiveProjectCard(project, {
+    reducedMotion: true,
+  });
+
+  try {
+    await focusWithKeyboard(rendered);
+    await hoverWithMouse(rendered);
+
+    assert.equal(rendered.container.querySelector("video"), null);
+    assert.equal(rendered.container.querySelector(".project-preview-fallback"), null);
+  } finally {
+    await rendered.cleanup();
+  }
+});
+
+test("a rejected video play falls back to GIF while active", async () => {
+  const rendered = await renderInteractiveProjectCard(project, {
+    play: () => Promise.reject(new Error("blocked playback")),
+  });
+
+  try {
+    await hoverWithMouse(rendered);
+    await act(async () => {});
+
+    assert.equal(
+      rendered.container.querySelector(".project-preview-fallback")?.getAttribute("src"),
+      "/media/florent/afterdark-preview.gif",
+    );
+  } finally {
+    await rendered.cleanup();
+  }
+});
+
+test("a video error falls back to GIF while active", async () => {
+  const rendered = await renderInteractiveProjectCard();
+
+  try {
+    await hoverWithMouse(rendered);
+    const video = rendered.container.querySelector("video");
+    await act(async () => {
+      video?.dispatchEvent(new rendered.window.Event("error", { bubbles: true }));
+    });
+
+    assert.equal(
+      rendered.container.querySelector(".project-preview-fallback")?.getAttribute("src"),
+      "/media/florent/afterdark-preview.gif",
+    );
+  } finally {
+    await rendered.cleanup();
+  }
+});
+
+test("a failed GIF fallback returns the active card to its poster", async () => {
+  const directGif = structuredClone(project);
+  directGif.preview.type = "gif";
+  directGif.preview.url = "/media/florent/direct-preview.gif";
+  directGif.preview.fallbackGifUrl = "";
+  const rendered = await renderInteractiveProjectCard(directGif);
+
+  try {
+    await hoverWithMouse(rendered);
+    const fallback = rendered.container.querySelector(".project-preview-fallback");
+    await act(async () => {
+      fallback?.dispatchEvent(new rendered.window.Event("error", { bubbles: true }));
+    });
+
+    assert.equal(rendered.container.querySelector(".project-preview-fallback"), null);
+    assert.equal(
+      rendered.container.querySelector("img")?.getAttribute("src"),
+      "/media/florent/afterdark-poster.jpg",
+    );
+  } finally {
+    await rendered.cleanup();
+  }
+});
 
 test("a touch pointerdown stops a preview already activated by keyboard focus", async () => {
   const rendered = await renderInteractiveProjectCard();
