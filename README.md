@@ -38,6 +38,10 @@ ADMIN_EMAILS=m.rossiflorent@gmail.com
 
 `ADMIN_EMAILS` accepte une liste d’adresses e-mail séparées par des virgules.
 `ADMIN_EMAIL` reste pris en charge comme variable de repli historique.
+L’autorisation RLS de Supabase est indépendante des variables Vercel : retirer
+un administrateur temporaire exige de mettre à jour `ADMIN_EMAILS` **et**
+d’appliquer une migration Supabase qui met à jour
+`public.is_portfolio_admin()`.
 
 La clé publique Supabase peut être exposée au navigateur. Ne jamais ajouter une
 clé `service_role`, une clé secrète Supabase ou une clé Resend dans une variable
