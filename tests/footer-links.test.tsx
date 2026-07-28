@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AboutView } from "../app/components/AboutView";
 import { FooterLinks } from "../app/components/FooterLinks";
+import { LegalView } from "../app/components/LegalView";
 import { PortfolioHome } from "../app/components/PortfolioHome";
 import { ProjectView } from "../app/components/ProjectView";
 import { defaultContent } from "../lib/content/fallback";
@@ -71,5 +72,36 @@ test("integrates social and legal links into every existing public view", () => 
     assert.match(markup, /href="https:\/\/www\.linkedin\.com\/"/);
     assert.match(markup, /href="\/fr\/legal"/);
     assert.match(markup, /href="\/fr\/privacy"/);
+  }
+});
+
+test("renders a footer landmark on legal and project public views", () => {
+  const projects = defaultContent.projects.filter(
+    (project) => project.status === "published",
+  );
+  const views = [
+    <LegalView
+      key="legal"
+      locale="fr"
+      content={defaultContent}
+      kind="legal"
+    />,
+    <LegalView
+      key="privacy"
+      locale="fr"
+      content={defaultContent}
+      kind="privacy"
+    />,
+    <ProjectView
+      key="project"
+      locale="fr"
+      content={defaultContent}
+      project={projects[0]}
+      projects={projects}
+    />,
+  ];
+
+  for (const view of views) {
+    assert.match(renderPublicView(view), /<footer(?:\s|>)/);
   }
 });

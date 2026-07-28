@@ -128,12 +128,14 @@ export function ProjectView({
             {labels.next}: {next.title[locale]} →
           </Link>
         </nav>
-        <FooterLinks
-          locale={locale}
-          content={content}
-          routeBase={routeBase}
-          compact
-        />
+        <footer>
+          <FooterLinks
+            locale={locale}
+            content={content}
+            routeBase={routeBase}
+            compact
+          />
+        </footer>
       </article>
     </main>
   );

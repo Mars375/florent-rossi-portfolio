@@ -174,12 +174,14 @@ export function LegalView({
           {copy.updatedLabel}: {content.legal.updatedAt}
         </p>
       </article>
-      <FooterLinks
-        locale={locale}
-        content={content}
-        routeBase={routeBase}
-        compact
-      />
+      <footer>
+        <FooterLinks
+          locale={locale}
+          content={content}
+          routeBase={routeBase}
+          compact
+        />
+      </footer>
     </main>
   );
 }
