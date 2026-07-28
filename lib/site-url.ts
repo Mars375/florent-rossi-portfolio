@@ -30,12 +30,12 @@ export function getSiteUrl(
 
 export function adminAuthCallbackUrl(
   configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL,
-  environment = process.env.NODE_ENV,
+  environment: string | undefined = process.env.NODE_ENV,
 ): string {
   const base =
-    environment === "production"
-      ? getCanonicalSiteUrl()
-      : getSiteUrl(configuredSiteUrl);
+    environment === "development"
+      ? getSiteUrl(configuredSiteUrl)
+      : getCanonicalSiteUrl();
 
   return new URL("/auth/confirm?next=/admin", base).toString();
 }

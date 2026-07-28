@@ -75,6 +75,15 @@ test("allows an explicitly configured localhost callback in development", () => 
   );
 });
 
+test("pins non-development admin authentication to florentrossi.com", () => {
+  for (const environment of ["test", "staging", undefined]) {
+    assert.equal(
+      adminAuthCallbackUrl("http://localhost:3000", environment),
+      "https://florentrossi.com/auth/confirm?next=/admin",
+    );
+  }
+});
+
 test("builds exact FR and EN canonical alternates", () => {
   const home = localizedAlternates("fr");
   const project = localizedAlternates("en", "/work/afterdark");
