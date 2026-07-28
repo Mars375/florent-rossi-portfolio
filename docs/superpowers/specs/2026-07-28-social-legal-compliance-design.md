@@ -117,7 +117,7 @@ Each route must:
 
 - reject unsupported locales through the existing locale behavior;
 - set localized metadata;
-- expose canonical and FR/EN alternate URLs on `https://florentrossi.fr`;
+- expose canonical and FR/EN alternate URLs on `https://florentrossi.com`;
 - use the current header and theme system;
 - render the compact utility footer.
 

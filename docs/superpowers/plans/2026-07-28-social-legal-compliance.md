@@ -21,6 +21,7 @@
 - Direct MP4 video continues to render immediately.
 - Preserve the existing light/dark themes, keyboard focus treatment, bilingual navigation, and no-zoom media behavior.
 - Use no new runtime dependency.
+- Use the exact production origin `https://florentrossi.com` for canonical and FR/EN alternate URLs.
 - Deploy code compatibility before publishing the new JSON to Supabase.
 
 ---
@@ -812,7 +813,7 @@ git commit -m "feat: expose social and legal footer links"
 
 ---
 
-### Task 4: Add bilingual Legal and Privacy routes
+### Task 4: Add canonical .com bilingual Legal and Privacy routes
 
 **Files:**
 - Create: `app/components/LegalView.tsx`
@@ -821,6 +822,8 @@ git commit -m "feat: expose social and legal footer links"
 - Create: `app/admin/(protected)/preview/[locale]/legal/page.tsx`
 - Create: `app/admin/(protected)/preview/[locale]/privacy/page.tsx`
 - Create: `tests/legal-pages.test.tsx`
+- Modify: `lib/site-url.ts`
+- Modify: `.env.example`
 - Modify: `tests/site-url.test.ts`
 - Modify: `app/globals.css`
 
@@ -880,19 +883,19 @@ test("legal routes publish exact localized canonical alternates", async () => {
 
   assert.equal(
     href(legal.alternates?.canonical),
-    "https://florentrossi.fr/fr/legal",
+    "https://florentrossi.com/fr/legal",
   );
   assert.equal(
     href(legal.alternates?.languages?.en),
-    "https://florentrossi.fr/en/legal",
+    "https://florentrossi.com/en/legal",
   );
   assert.equal(
     href(privacy.alternates?.canonical),
-    "https://florentrossi.fr/en/privacy",
+    "https://florentrossi.com/en/privacy",
   );
   assert.equal(
     href(privacy.alternates?.languages?.fr),
-    "https://florentrossi.fr/fr/privacy",
+    "https://florentrossi.com/fr/privacy",
   );
 });
 ```
@@ -907,7 +910,14 @@ node node_modules/tsx/dist/cli.mjs --test tests/legal-pages.test.tsx tests/site-
 
 Expected: FAIL because the component and routes do not exist.
 
-- [ ] **Step 3: Implement the structured LegalView**
+- [ ] **Step 3: Switch the production origin to `.com`**
+
+Change `PRODUCTION_SITE_URL` in `lib/site-url.ts`, the production example in
+`.env.example`, and every existing expectation in `tests/site-url.test.ts`
+from `https://florentrossi.fr` to the exact origin
+`https://florentrossi.com`.
+
+- [ ] **Step 4: Implement the structured LegalView**
 
 Create `app/components/LegalView.tsx` with:
 
@@ -1000,7 +1010,7 @@ export function LegalView({
 
 Preserve line breaks in the hosting address with CSS `white-space: pre-line`.
 
-- [ ] **Step 4: Implement both route modules**
+- [ ] **Step 5: Implement both route modules**
 
 Use this exact pattern in `app/[locale]/legal/page.tsx`, with title and suffix
 `/legal`:
@@ -1047,7 +1057,7 @@ alternates: localizedAlternates(resolved, "/privacy"),
 
 and render `kind="privacy"`.
 
-- [ ] **Step 5: Add legal-page styling**
+- [ ] **Step 6: Add legal-page styling**
 
 Before styling, create both protected preview routes. Follow the existing
 About-preview pattern exactly. The Legal preview renders:
@@ -1165,7 +1175,7 @@ Add to `app/globals.css`:
 }
 ```
 
-- [ ] **Step 6: Run the focused page and metadata tests**
+- [ ] **Step 7: Run the focused page and metadata tests**
 
 Run:
 
@@ -1175,7 +1185,7 @@ node node_modules/tsx/dist/cli.mjs --test tests/legal-pages.test.tsx tests/site-
 
 Expected: all legal-view and metadata tests PASS.
 
-- [ ] **Step 7: Commit the public legal pages**
+- [ ] **Step 8: Commit the public legal pages**
 
 ```powershell
 git add app/components/LegalView.tsx app/[locale]/legal/page.tsx app/[locale]/privacy/page.tsx "app/admin/(protected)/preview/[locale]/legal/page.tsx" "app/admin/(protected)/preview/[locale]/privacy/page.tsx" app/globals.css tests/legal-pages.test.tsx tests/site-url.test.ts
@@ -1590,7 +1600,7 @@ On the Vercel production URL, verify:
 
 - HTTP 200 for `/fr/legal` and `/en/privacy`;
 - page HTML contains the theme bootstrap;
-- the new legal routes use `https://florentrossi.fr` canonicals;
+- all public routes use `https://florentrossi.com` canonicals;
 - an old Supabase document without `legal` still renders using defaults.
 
 - [ ] **Step 4: Atomically synchronize both portfolio documents**
