@@ -72,3 +72,89 @@ consignée dans le tableau.
   GitHub/Vercel de `origin/main`, référence de production déployée. Elle ne
   modifie ni Supabase, ni Vercel, ni la production, et ne remplace pas une
   vérification navigateur de production.
+
+## Contrat fonctionnel public — exécution (Tâche 2)
+
+Référence auditée : `b922be7942e0d7a3f876defadc650d1a82f2a5ba`.
+
+### Matrice de routes desktop (1440 × 900)
+
+La surface Codex Browser n’a pas pu démarrer avant toute navigation : son
+kernel échoue avec `ReferenceError: require is not defined in ES module scope`
+depuis `C:\\Users\\loic_\\package.json` (`type: module`). Les résultats ci-dessous
+ne sont donc pas inférés des tests : chaque contrôle HTTP, `html[lang]`,
+header/main/footer et liens internes est **NOT TESTABLE** en production.
+
+| Route | Navigation / landmarks / liens internes | `html[lang]` | État |
+| --- | --- | --- | --- |
+| `/fr` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
+| `/en` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
+| `/fr/about` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
+| `/en/about` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
+| `/fr/legal` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
+| `/en/legal` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
+| `/fr/privacy` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
+| `/en/privacy` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
+| `/fr/work/afterdark` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
+| `/en/work/afterdark` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
+| `/fr/work/nuit-35` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
+| `/en/work/nuit-35` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
+| `/fr/work/orbital-radio` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
+| `/en/work/orbital-radio` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
+| `/fr/work/material-memory` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
+| `/en/work/material-memory` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
+| `/fr/work/sans-titre-08` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
+| `/en/work/sans-titre-08` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
+| `/fr/work/audit-slug-inexistant` | NOT TESTABLE (état 404 attendu) | NOT TESTABLE | NOT TESTABLE |
+
+Les slugs ont été lus depuis `content/default.json`. L’inspection de la branche
+confirme que `WorkPage` filtre les projets publiés et appelle `notFound()` pour
+un slug absent ; cette preuve de code ne remplace pas la vérification live.
+
+### Interactions desktop
+
+| Contrôle | Résultat | Preuve / limite |
+| --- | --- | --- |
+| Bascule FR → EN → FR | NOT TESTABLE | navigateur indisponible avant ouverture de `/fr` |
+| Thème sombre puis clair | NOT TESTABLE | navigateur indisponible avant ouverture de `/fr` |
+| Aperçu au survol puis arrêt | NOT TESTABLE | navigateur indisponible avant ouverture de `/fr` |
+| Aperçu au focus clavier | NOT TESTABLE | navigateur indisponible avant ouverture de `/fr` |
+| Ouverture d’une étude de cas via slug stable | NOT TESTABLE | navigateur indisponible avant ouverture de `/fr` |
+
+### Mobile et mouvement réduit
+
+Les contrôles live à `390 × 844` (débordement horizontal sur accueil, à-propos
+et étude de cas ; contrôles tactiles ; poster-first ; sélecteurs de langue et
+thème) sont **NOT TESTABLE**, car aucun onglet ne peut être créé.
+
+Le contrôle de mouvement réduit est couvert localement, sans être présenté comme
+une preuve live : `tests/project-card.test.tsx` passe, notamment
+`reduced motion keeps the interactive card poster-only`, qui émule
+`prefers-reduced-motion: reduce` et vérifie l’absence de `<video>` et de GIF
+après focus et survol. `ProjectCard` conditionne également le rendu du lecteur
+à `canActivateAnimatedPreview`, et `app/globals.css` désactive animations et
+transitions dans la media query correspondante.
+
+### Console de production
+
+La lecture des erreurs de console sur `/fr`, `/en`, `/fr/about` et une étude de
+cas est **NOT TESTABLE** : le navigateur n’a pas atteint la première navigation.
+Aucune erreur applicative, ni aucun échec tiers de vidéo, n’est donc déclaré sur
+la base de cette exécution.
+
+### Gates ciblés
+
+- `node node_modules/tsx/dist/cli.mjs --test tests/project-card.test.tsx` :
+  9 réussites, 0 échec (5,26 s).
+- `node node_modules/tsx/dist/cli.mjs --test tests/personal-portfolio.test.ts tests/footer-links.test.tsx` :
+  9 réussites, 0 échec (1,97 s).
+- `git diff --check` : succès.
+
+`npm test` n’était pas exécutable dans cet environnement parce que le shim npm
+référence le module absent `C:\\Users\\loic_\\AppData\\Roaming\\npm\\node_modules\\npm\\bin\\npm-cli.js` ;
+les mêmes tests ciblés ont été lancés directement via le CLI `tsx` du projet.
+
+### Constats publics confirmés
+
+Aucun défaut P0–P3 n’est confirmé par cette exécution : l’absence de navigateur
+empêche d’établir une preuve live, et aucun correctif de code n’est justifié.
