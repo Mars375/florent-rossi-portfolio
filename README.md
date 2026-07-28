@@ -2,8 +2,8 @@
 
 Portfolio personnel bilingue FR/EN de Florent Rossi, directeur artistique,
 construit avec Next.js pour Vercel. Le contenu public et le brouillon sont
-stockés comme documents JSON validés dans Supabase. Un seul compte administrateur
-peut modifier, prévisualiser et publier le site.
+stockés comme documents JSON validés dans Supabase. Les comptes administrateurs
+configurés peuvent modifier, prévisualiser et publier le site.
 
 ## Fonctionnalités
 
@@ -33,8 +33,11 @@ Variables requises :
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
-ADMIN_EMAIL=m.rossiflorent@gmail.com
+ADMIN_EMAILS=m.rossiflorent@gmail.com
 ```
+
+`ADMIN_EMAILS` accepte une liste d’adresses e-mail séparées par des virgules.
+`ADMIN_EMAIL` reste pris en charge comme variable de repli historique.
 
 La clé publique Supabase peut être exposée au navigateur. Ne jamais ajouter une
 clé `service_role`, une clé secrète Supabase ou une clé Resend dans une variable

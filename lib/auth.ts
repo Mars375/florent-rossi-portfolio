@@ -1,11 +1,29 @@
 const DEFAULT_ADMIN_EMAIL = "m.rossiflorent@gmail.com";
 
-export function configuredAdminEmail(): string {
-  return (process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL).trim().toLowerCase();
+function normalizeEmailList(value: string | undefined): string[] {
+  if (!value) return [];
+
+  return [
+    ...new Set(
+      value
+        .split(",")
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+  ];
+}
+
+export function configuredAdminEmails(): string[] {
+  const configured = normalizeEmailList(process.env.ADMIN_EMAILS);
+  if (configured.length > 0) return configured;
+
+  const legacy = normalizeEmailList(process.env.ADMIN_EMAIL);
+  return legacy.length > 0 ? legacy : [DEFAULT_ADMIN_EMAIL];
 }
 
 export function isAdminEmail(email: string | null | undefined): boolean {
-  return email?.trim().toLowerCase() === configuredAdminEmail();
+  if (!email) return false;
+  return configuredAdminEmails().includes(email.trim().toLowerCase());
 }
 
 export function safeNextPath(value: string | null | undefined): string {
