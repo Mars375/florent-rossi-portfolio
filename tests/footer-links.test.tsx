@@ -4,6 +4,7 @@ import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared
 import { PathnameContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { Window } from "happy-dom";
 import { AboutView } from "../app/components/AboutView";
 import { FooterLinks } from "../app/components/FooterLinks";
 import { LegalView } from "../app/components/LegalView";
@@ -75,7 +76,7 @@ test("integrates social and legal links into every existing public view", () => 
   }
 });
 
-test("renders a footer landmark on legal and project public views", () => {
+test("renders one global footer landmark outside main and article on legal and project public views", () => {
   const projects = defaultContent.projects.filter(
     (project) => project.status === "published",
   );
@@ -102,6 +103,15 @@ test("renders a footer landmark on legal and project public views", () => {
   ];
 
   for (const view of views) {
-    assert.match(renderPublicView(view), /<footer(?:\s|>)/);
+    const document = new Window().document;
+    document.body.innerHTML = renderPublicView(view);
+    const footers = document.querySelectorAll("footer");
+
+    assert.equal(footers.length, 1);
+    const footer = footers[0];
+    assert.ok(footer);
+    assert.equal(footer.closest("main"), null);
+    assert.equal(footer.closest("article"), null);
+    assert.ok(footer.querySelector('a[href="/fr/legal"]'));
   }
 });

@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, rename, rm } from "node:fs/promises";
+import { copyFile, mkdir, readdir, readFile, rename, rm } from "node:fs/promises";
 import { basename, dirname, extname, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import ffmpegPath from "ffmpeg-static";
@@ -46,6 +46,35 @@ function temporaryOutputPath(outputPath) {
   const extension = extname(outputPath);
   const name = basename(outputPath, extension);
   return join(dirname(outputPath), `.${name}-${process.pid}-${Date.now()}${extension}`);
+}
+
+function escapeRegularExpression(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+async function removeStaleTemporaryOutput(outputPath) {
+  const extension = extname(outputPath);
+  const name = basename(outputPath, extension);
+  const directory = dirname(outputPath);
+  const temporaryName = new RegExp(
+    `^${escapeRegularExpression(`.${name}-`)}\\d+-\\d+${escapeRegularExpression(extension)}$`,
+  );
+
+  let entries;
+  try {
+    entries = await readdir(directory);
+  } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") {
+      return;
+    }
+    throw error;
+  }
+
+  await Promise.all(
+    entries
+      .filter((entry) => temporaryName.test(entry))
+      .map((entry) => rm(join(directory, entry), { force: true })),
+  );
 }
 
 async function writeAtomically(outputPath, write) {
@@ -144,6 +173,15 @@ async function main() {
   }
 
   await mkdir(outputDirectory, { recursive: true });
+  await Promise.all([
+    ...loops.flatMap(({ id }) => [
+      join(outputDirectory, `${id}-loop.mp4`),
+      join(outputDirectory, `${id}-poster.jpg`),
+      join(outputDirectory, `${id}-preview.gif`),
+    ]),
+    join(outputDirectory, "about-poster.jpg"),
+    "public/og.png",
+  ].map(removeStaleTemporaryOutput));
 
   for (const loop of loops) {
     await generateLoop(loop);

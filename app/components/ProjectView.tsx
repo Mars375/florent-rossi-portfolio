@@ -31,7 +31,8 @@ export function ProjectView({
   const gallery = caseStudyGallery(project);
 
   return (
-    <main>
+    <>
+      <main>
       <SiteHeader locale={locale} content={content} routeBase={routeBase} />
       <article className="case-study">
         <header className="case-hero shell">
@@ -128,15 +129,16 @@ export function ProjectView({
             {labels.next}: {next.title[locale]} →
           </Link>
         </nav>
-        <footer>
-          <FooterLinks
-            locale={locale}
-            content={content}
-            routeBase={routeBase}
-            compact
-          />
-        </footer>
       </article>
-    </main>
+      </main>
+      <footer>
+        <FooterLinks
+          locale={locale}
+          content={content}
+          routeBase={routeBase}
+          compact
+        />
+      </footer>
+    </>
   );
 }

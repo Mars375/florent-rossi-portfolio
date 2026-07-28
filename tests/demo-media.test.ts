@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdtemp, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import test from "node:test";
 import ffmpegPath from "ffmpeg-static";
 import sharp from "sharp";
@@ -167,12 +167,25 @@ test("generator is idempotent for committed production media", async () => {
   assert.deepEqual(await checksums("public", ["og.png"]), beforeSocialCard);
 });
 
-test("interrupted media generation preserves the existing loop", async () => {
+async function waitForTemporaryOutput(directory: string, timeoutMs = 5_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const names = await readdir(directory);
+    const temporary = names.find((name) => /^\.afterdark-loop-\d+-\d+\.mp4$/.test(name));
+    if (temporary) return join(directory, temporary);
+    await new Promise((resolveDelay) => setTimeout(resolveDelay, 25));
+  }
+  throw new Error("FFmpeg did not start writing its adjacent temporary output");
+}
+
+test("SIGKILL preserves the destination and the next start removes its stale adjacent temporary", async () => {
   const directory = await mkdtemp(join(tmpdir(), "florent-media-generation-"));
   const loopPath = join(directory, "public", "media", "florent", "afterdark-loop.mp4");
+  const unrelatedPath = join(directory, "public", "media", "florent", ".afterdark-loop-1-2.mp4.bak");
   const original = Buffer.from("existing production loop");
   await mkdir(join(directory, "public", "media", "florent"), { recursive: true });
   await writeFile(loopPath, original);
+  await writeFile(unrelatedPath, "must not be removed");
 
   const child = spawn(process.execPath, [resolve("scripts/generate-demo-media.mjs")], {
     cwd: directory,
@@ -181,19 +194,33 @@ test("interrupted media generation preserves the existing loop", async () => {
   const exited = new Promise<void>((resolveChild) => child.once("exit", () => resolveChild()));
 
   try {
-    const deadline = Date.now() + 10_000;
-    while (Date.now() < deadline) {
-      if (!(await readFile(loopPath)).equals(original)) {
-        child.kill();
-        await exited;
-        break;
-      }
-      await new Promise((resolveDelay) => setTimeout(resolveDelay, 25));
-    }
+    const temporary = await waitForTemporaryOutput(dirname(loopPath));
+    child.kill("SIGKILL");
+    await exited;
 
     assert.deepEqual(await readFile(loopPath), original);
+    assert.equal((await stat(temporary)).isFile(), true);
+
+    const recovery = spawn(process.execPath, [resolve("scripts/generate-demo-media.mjs")], {
+      cwd: directory,
+      stdio: "ignore",
+    });
+    const recovered = new Promise<void>((resolveChild) => recovery.once("exit", () => resolveChild()));
+    try {
+      const deadline = Date.now() + 5_000;
+      while (Date.now() < deadline) {
+        if (!(await readdir(dirname(loopPath))).includes(basename(temporary))) break;
+        await new Promise((resolveDelay) => setTimeout(resolveDelay, 25));
+      }
+      assert.equal((await readdir(dirname(loopPath))).includes(basename(temporary)), false);
+      assert.deepEqual(await readFile(loopPath), original);
+      assert.equal(await readFile(unrelatedPath, "utf8"), "must not be removed");
+    } finally {
+      recovery.kill("SIGKILL");
+      await recovered;
+    }
   } finally {
-    child.kill();
+    child.kill("SIGKILL");
     await exited;
     await rm(directory, { recursive: true, force: true });
   }

@@ -4,6 +4,7 @@ import { LegalView } from "../../components/LegalView";
 import { isLocale } from "../../../lib/content/locales";
 import { getPublishedContent } from "../../../lib/content/repository";
 import { localizedAlternates, localizedUrl } from "../../../lib/site-url";
+import { publicPageMetadata } from "../../../lib/page-metadata";
 
 type PageProps = { params: Promise<{ locale: string }> };
 
@@ -11,9 +12,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { locale } = await params;
   const resolved = locale === "fr" ? "fr" : "en";
   return {
-    title: resolved === "fr" ? "Confidentialité" : "Privacy",
+    ...publicPageMetadata({
+      pageTitle: resolved === "fr" ? "Confidentialité" : "Privacy",
+      url: localizedUrl(resolved, "/privacy"),
+    }),
     alternates: localizedAlternates(resolved, "/privacy"),
-    openGraph: { url: localizedUrl(resolved, "/privacy") },
   };
 }
 

@@ -4,6 +4,8 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { generateMetadata as generateHomeMetadata } from "../app/[locale]/page";
 import { generateMetadata as generateAboutMetadata } from "../app/[locale]/about/page";
+import { generateMetadata as generateLegalMetadata } from "../app/[locale]/legal/page";
+import { generateMetadata as generatePrivacyMetadata } from "../app/[locale]/privacy/page";
 import { generateMetadata as generateWorkMetadata } from "../app/[locale]/work/[slug]/page";
 import robots from "../app/robots";
 import sitemap from "../app/sitemap";
@@ -12,6 +14,10 @@ import { metadata as loginMetadata } from "../app/admin/login/page";
 function href(value: unknown): string {
   assert.ok(value);
   return value instanceof URL ? value.href : String(value);
+}
+
+function first<T>(value: T | T[] | undefined): T | undefined {
+  return Array.isArray(value) ? value[0] : value;
 }
 
 test("publishes a robots policy that indexes public routes but excludes every admin URL", () => {
@@ -56,19 +62,35 @@ test("sitemap is explicitly dynamic rather than a build snapshot", async () => {
   assert.match(source, /export const dynamic = "force-dynamic"/);
 });
 
-test("public page metadata declares its canonical Open Graph URL", async () => {
-  const [home, about, work] = await Promise.all([
+test("public pages resolve a complete Open Graph card with their canonical URLs", async () => {
+  const [home, about, legal, privacy, work] = await Promise.all([
     generateHomeMetadata({ params: Promise.resolve({ locale: "fr" }) }),
     generateAboutMetadata({ params: Promise.resolve({ locale: "en" }) }),
+    generateLegalMetadata({ params: Promise.resolve({ locale: "fr" }) }),
+    generatePrivacyMetadata({ params: Promise.resolve({ locale: "en" }) }),
     generateWorkMetadata({
       params: Promise.resolve({ locale: "fr", slug: "afterdark" }),
     }),
   ]);
 
-  assert.equal(href(home.openGraph?.url), "https://florentrossi.com/fr");
-  assert.equal(href(about.openGraph?.url), "https://florentrossi.com/en/about");
-  assert.equal(
-    href(work.openGraph?.url),
-    "https://florentrossi.com/fr/work/afterdark",
-  );
+  const expected = [
+    [home, "https://florentrossi.com/fr"],
+    [about, "https://florentrossi.com/en/about"],
+    [legal, "https://florentrossi.com/fr/legal"],
+    [privacy, "https://florentrossi.com/en/privacy"],
+    [work, "https://florentrossi.com/fr/work/afterdark"],
+  ] as const;
+
+  for (const [metadata, url] of expected) {
+    assert.equal(href(metadata.openGraph?.url), url);
+    assert.equal((metadata.openGraph as { type?: string } | undefined)?.type, "website");
+    const image = first(metadata.openGraph?.images);
+    assert.ok(image && typeof image === "object" && "url" in image);
+    assert.equal(
+      href(image.url),
+      "https://florentrossi.com/og.png",
+    );
+    assert.ok(metadata.openGraph?.title);
+    assert.ok(metadata.openGraph?.description);
+  }
 });

@@ -3,7 +3,7 @@
 Date : 28 juillet 2026
 Production : https://florentrossi.com
 Branche auditée : `audit/production-remediation`
-Base : `93143ad8f0710527d4a6e1cf80843954362fa348`
+Base : `f1e54d8c263d46cac9949a02a6eb5acc9e3809ec`
 
 ## Portée et méthode
 
