@@ -28,7 +28,7 @@ Chaque GIF respecte les caractéristiques suivantes :
 - 8 images par seconde ;
 - boucle infinie ;
 - palette optimisée avec `palettegen` et `paletteuse` ;
-- poids maximal visé de 2 Mo par fichier ;
+- poids maximal de 2 Mo par fichier ;
 - génération déterministe à partir du MP4 source.
 
 Les GIF restent des contenus de démonstration remplaçables. Le champ existant `preview.fallbackGifUrl` du modèle de contenu reçoit leur chemin. Le champ `preview.url` continue de référencer la boucle MP4 afin que celle-ci reste disponible dans l’étude de cas et l’administration.
@@ -46,7 +46,7 @@ Sur un ordinateur compatible avec le survol, et uniquement si la réduction des 
 
 Sur un appareil tactile sans survol, ou lorsque `prefers-reduced-motion: reduce` est actif, la carte reste entièrement statique et ouvre directement l’étude de cas. L’ancien mécanisme de lecture tactile de la boucle vidéo est supprimé.
 
-Le badge de lecture et son indicateur peuvent rester visibles pendant l’aperçu GIF, avec une animation de trois secondes. Ils ne sont pas affichés sur la version statique.
+Le badge de lecture et son indicateur restent visibles pendant l’aperçu GIF, avec une animation de trois secondes. Ils ne sont pas affichés sur la version statique.
 
 En cas d’échec du chargement du GIF, la carte conserve immédiatement son poster et reste navigable. Un GIF absent ou une valeur vide dans `fallbackGifUrl` produit également une carte statique valide.
 
@@ -126,7 +126,7 @@ Le client peut ensuite remplacer les posters, GIF, MP4 et vidéos complètes dep
 ### Tests automatisés
 
 - Vérifier la présence de cinq GIF distincts et leur signature `GIF87a` ou `GIF89a`.
-- Vérifier une largeur maximale de 640 px, environ 24 images, une boucle infinie et un poids maximal de 2 Mo.
+- Vérifier une largeur maximale de 640 px, exactement 24 images, une boucle infinie et un poids maximal de 2 Mo.
 - Vérifier que chaque projet référence le GIF correspondant et conserve son MP4.
 - Tester la décision d’afficher le poster ou le GIF selon le survol, le focus, le type de pointeur et `prefers-reduced-motion`.
 - Tester le repli sur le poster après une erreur de chargement.
