@@ -1,12 +1,16 @@
 import type { Locale, Project } from "../../content/schema";
+import type { LegalLocaleContent } from "../../content/legal";
 import { parseVideoSource } from "../../lib/content/video";
+import { ExternalVideoConsent } from "./ExternalVideoConsent";
 
 export function VideoEmbed({
   project,
   locale,
+  consentCopy,
 }: {
   project: Project;
   locale: Locale;
+  consentCopy: Pick<LegalLocaleContent, "loadVideo" | "externalVideoNotice">;
 }) {
   let source: ReturnType<typeof parseVideoSource>;
   try {
@@ -43,15 +47,13 @@ export function VideoEmbed({
   }
 
   return (
-    <iframe
-      className="full-video"
-      src={source.src}
+    <ExternalVideoConsent
+      embedUrl={source.src}
+      notice={consentCopy.externalVideoNotice}
+      buttonLabel={consentCopy.loadVideo}
+      provider={project.fullVideo.provider === "vimeo" ? "Vimeo" : "YouTube"}
+      posterUrl={project.posterUrl}
       title={title}
-      allow="autoplay; fullscreen; picture-in-picture"
-      allowFullScreen
-      loading="lazy"
-      referrerPolicy="strict-origin-when-cross-origin"
-      sandbox="allow-scripts allow-same-origin allow-presentation"
     />
   );
 }

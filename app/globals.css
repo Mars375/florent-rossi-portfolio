@@ -521,6 +521,30 @@ a:focus-visible {
   filter: saturate(0.85) contrast(1.08);
 }
 
+.external-video-consent {
+  position: relative;
+  min-height: min(82vh, 980px);
+}
+
+.external-video-consent img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.75) brightness(0.55);
+}
+
+.external-video-consent > div {
+  position: absolute;
+  inset: auto 32px 32px;
+  max-width: 620px;
+  color: #fff;
+}
+
+.external-video-consent button {
+  margin-top: 18px;
+  border: 0;
+}
+
 .film-play {
   position: absolute;
   right: 32px;
@@ -926,6 +950,14 @@ figcaption {
 
   .case-film .full-video {
     height: 68svh;
+  }
+
+  .external-video-consent {
+    min-height: 68svh;
+  }
+
+  .external-video-consent > div {
+    inset: auto 18px 18px;
   }
 
   .story-split,

@@ -45,8 +45,14 @@ export function ProjectView({
         </header>
 
         <section className="case-film" id="film">
-          <VideoEmbed project={project} locale={locale} />
-          <span className="film-play">▶ {labels.playFilm}</span>
+          <VideoEmbed
+            project={project}
+            locale={locale}
+            consentCopy={content.legal[locale]}
+          />
+          {project.fullVideo.provider === "mp4" ? (
+            <span className="film-play">▶ {labels.playFilm}</span>
+          ) : null}
         </section>
 
         <section className="story-section shell story-split">
