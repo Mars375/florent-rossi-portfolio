@@ -388,7 +388,7 @@ cartes projet, consentement vidéo, langue et thème. L'éditeur, ses contrôles
 fichier et ses barres de publication restent nécessairement clients; aucune
 conversion serveur sûre et mesurable n'est confirmée.
 
-### Inventaire de cohésion
+### Observation d'architecture — pas de constat ouvert
 
 Les seuls fichiers au-dessus de 300 lignes sont `app/admin/AdminEditor.tsx`
 (649 lignes) et `app/admin/components/ProjectEditor.tsx` (529 lignes).
@@ -400,14 +400,14 @@ l'état publication/message; il appelle `saveDraftAction` et
 `onChange` et `onQueueMediaDelete`; il orchestre identité, médias, film,
 récit bilingue, galerie et crédits, avec `LocalizedField` et `MediaUploader`.
 
-Cette taille est un **P2 de maintenabilité**, non un défaut fonctionnel : une
-modification d'une section partage aujourd'hui le même fichier client et le
-même contexte d'état que toutes les autres. Aucun split n'est appliqué dans ce
-lot : il n'existe pas de régression isolée et un déplacement immédiat de cinq
-formulaires augmenterait le risque sans snapshot comportemental préalable.
-Le découpage futur, après tests de rendu/interaction rouges, conserve l'état et
-les actions dans les conteneurs et expose seulement des interfaces typées
-`value`/`onChange` dans les sections :
+La taille et l'état partagé ne constituent pas seuls un défaut de cohésion ou
+un risque reproductible de changement : aucun test difficile à isoler, défaut
+observable ou historique de régression n'a été établi. Ce n'est donc ni un
+finding, ni un élément de backlog, et aucun refactor n'est justifié dans ce lot.
+Si un signal mesurable apparaît (par exemple une section impossible à modifier
+ou tester isolément), le découpage suivant sera évalué avec un test de
+comportement rouge préalable. Il conserve l'état et les actions dans les
+conteneurs et expose seulement des interfaces typées `value`/`onChange` :
 
 ```text
 AdminEditor
@@ -430,7 +430,7 @@ projet. Les autres paires FR/EN ont des structures distinctes (navigation,
 accueil, à propos et légal) : aucune duplication uniforme assez sûre pour être
 extraite sans changer les libellés ou les interactions.
 
-### P2 corrigé — guide d'exploitation de l'éditeur obsolète
+### P3 corrigé — guide d'exploitation de l'éditeur obsolète
 
 - **Preuve reproductible :** le guide imposait une seule adresse alors que
   `ADMIN_EMAILS` est une allow-list (avec `ADMIN_EMAIL` de repli); il annonçait
@@ -464,12 +464,14 @@ couplerait aucun composant UI à Supabase.
 
 ### Dépendances
 
-Les commandes prescrites `npm audit --omit=dev --json`, `npm audit --json` et
-`npm outdated --json` nécessitent un envoi réseau du graphe de dépendances vers
-le registre npm. L'environnement a bloqué cette divulgation avant tout rapport;
-aucun résultat de vulnérabilité production ou développement, ni version récente
-de dépendance directe, ne peut donc être affirmé. Aucune installation, aucun
-`npm audit fix` et aucune réécriture du lockfile n'ont été exécutés. Le suivi
-requis est d'autoriser explicitement cette consultation du registre puis de
-consigner, séparément, advisory, chemin, sévérité, version corrigée et impact
-production/dev avant toute mise à jour ciblée.
+La première commande, `npm audit --omit=dev --json`, n'a fourni aucun résultat :
+le sandbox a bloqué son appel au registre npm. Une escalade read-only a ensuite
+été refusée par la politique, car elle transmettrait le graphe de dépendances au
+registre public. Conformément à ce refus, `npm audit --json` et
+`npm outdated --json` n'ont pas été exécutées ni contournées. Aucun niveau de
+vulnérabilité production/développement, advisory ou obsolescence ne peut donc
+être revendiqué. `package.json` et `package-lock.json` sont inchangés; aucune
+installation, aucun `npm audit fix` et aucune réécriture du lockfile n'ont été
+effectués. Cette limitation reste ouverte jusqu'à une autorisation explicite de
+la consultation réseau, puis une consignation séparée des advisory, chemins,
+sévérités, versions corrigées et impacts prod/dev.
