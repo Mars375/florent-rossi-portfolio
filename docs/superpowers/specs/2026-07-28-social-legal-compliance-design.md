@@ -86,12 +86,14 @@ Create one reusable footer-links unit that consumes:
 
 - locale;
 - route base;
+- localized site location;
 - site copyright;
 - social list;
 - localized Legal and Privacy link labels.
 
 It renders:
 
+- the localized location;
 - all enabled social links;
 - localized links to `/{locale}/legal` and `/{locale}/privacy`;
 - copyright.
@@ -108,6 +110,8 @@ Add:
 - `/en/legal`
 - `/fr/privacy`
 - `/en/privacy`
+- `/admin/preview/fr/legal` and `/admin/preview/en/legal`
+- `/admin/preview/fr/privacy` and `/admin/preview/en/privacy`
 
 Each route must:
 
@@ -116,6 +120,11 @@ Each route must:
 - expose canonical and FR/EN alternate URLs on `https://florentrossi.fr`;
 - use the current header and theme system;
 - render the compact utility footer.
+
+The protected preview variants read the draft document, display the existing
+private-preview banner, and keep all footer navigation inside
+`/admin/preview/{locale}` so an administrator can review unpublished legal
+changes before publication.
 
 ## Editable content model
 
