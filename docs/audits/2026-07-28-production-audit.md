@@ -375,3 +375,101 @@ l'invalidation de layout sans test dédié.
   et `/admin/preview/fr`, la double règle robots et la propriété dynamique;
   le build affiche maintenant `/sitemap.xml` en route dynamique (`ƒ`). La
   vérification HTTP de production attend toujours le déploiement autorisé.
+
+## Architecture, dépendances et exploitation — Tâche 6
+
+Référence auditée : `525e9af54c2695c228decfdefb45fbd99f644107`. Cet axe ne
+modifie ni les routes, ni le contenu, ni la production. L'inventaire recense
+dix composants client : `AdminEditor`, `ProjectEditor`, `LegalEditor`,
+`MediaUploader`, `PublishBar`, `LoginForm`, `ProjectCard`,
+`ExternalVideoConsent`, `LanguageSwitcher` et `ThemeToggle`. Les composants
+publics qui nécessitent réellement des événements ou de l'état local sont les
+cartes projet, consentement vidéo, langue et thème. L'éditeur, ses contrôles de
+fichier et ses barres de publication restent nécessairement clients; aucune
+conversion serveur sûre et mesurable n'est confirmée.
+
+### Inventaire de cohésion
+
+Les seuls fichiers au-dessus de 300 lignes sont `app/admin/AdminEditor.tsx`
+(649 lignes) et `app/admin/components/ProjectEditor.tsx` (529 lignes).
+`AdminEditor` possède le brouillon, l'onglet sélectionné, le projet sélectionné,
+la révision/autosauvegarde sérielle, les suppressions de médias en attente et
+l'état publication/message; il appelle `saveDraftAction` et
+`publishDraftAction`, et compose `LocalizedField`, `LegalEditor`,
+`ProjectEditor` et `PublishBar`. `ProjectEditor` reçoit un `Project`,
+`onChange` et `onQueueMediaDelete`; il orchestre identité, médias, film,
+récit bilingue, galerie et crédits, avec `LocalizedField` et `MediaUploader`.
+
+Cette taille est un **P2 de maintenabilité**, non un défaut fonctionnel : une
+modification d'une section partage aujourd'hui le même fichier client et le
+même contexte d'état que toutes les autres. Aucun split n'est appliqué dans ce
+lot : il n'existe pas de régression isolée et un déplacement immédiat de cinq
+formulaires augmenterait le risque sans snapshot comportemental préalable.
+Le découpage futur, après tests de rendu/interaction rouges, conserve l'état et
+les actions dans les conteneurs et expose seulement des interfaces typées
+`value`/`onChange` dans les sections :
+
+```text
+AdminEditor
+├── SiteSettingsEditor
+├── HomeContentEditor
+├── AboutContentEditor
+├── ProjectWorkspace
+└── LegalEditor
+
+ProjectEditor
+├── ProjectIdentityFields
+├── ProjectMediaFields
+├── ProjectStoryFields
+├── ProjectGalleryFields
+└── ProjectCreditsFields
+```
+
+`LocalizedField` centralise déjà le motif localisé réutilisé dans l'éditeur de
+projet. Les autres paires FR/EN ont des structures distinctes (navigation,
+accueil, à propos et légal) : aucune duplication uniforme assez sûre pour être
+extraite sans changer les libellés ou les interactions.
+
+### P2 corrigé — guide d'exploitation de l'éditeur obsolète
+
+- **Preuve reproductible :** le guide imposait une seule adresse alors que
+  `ADMIN_EMAILS` est une allow-list (avec `ADMIN_EMAIL` de repli); il annonçait
+  quatre onglets alors que `AdminEditor` expose aussi `Légal`; il décrivait le
+  GIF comme aperçu principal alors que `ProjectCard` active une vidéo MP4 et ne
+  montre le GIF qu'en secours; le README disait enfin que le domaine Resend
+  final était inconnu malgré `florentrossi.com` dans la configuration live.
+- **Impact :** risque d'accès administrateur mal compris, de mauvais média
+  téléversé et de configuration e-mail retardée.
+- **Cause racine :** la documentation n'avait pas été mise à jour avec
+  l'allow-list, l'onglet légal et le chemin MP4 → GIF.
+- **Correction appliquée :** README et guide alignés sur l'allow-list, les cinq
+  onglets, le comportement affiche/MP4/GIF, le statut WebM et le domaine
+  Resend; la copie locale est maintenant une commande PowerShell Windows.
+- **Validation :** comparaison directe avec `AdminEditor`, `ProjectCard`, le
+  schéma de médias et les variables documentées; aucune donnée ni
+  configuration externe n'a été modifiée.
+
+### Erreurs, validation et propriété
+
+La validation de schéma est assurée par `parsePortfolioContent`; sa première
+erreur est mise en français par `portfolioErrorMessage`, qui est aussi employé
+par les actions de sauvegarde et publication. L'autosauvegarde affiche le
+résultat de `saveDraftAction`; l'import préfixe la même normalisation par
+`Import refusé`; la publication utilise `publishDraftWithRepository`, puis
+signale explicitement un nettoyage de médias non bloquant. Les erreurs ne sont
+donc pas dupliquées de façon contradictoire. Une extraction future minimale
+serait `lib/content/editor-feedback.ts`, propriétaire de la présentation des
+erreurs de validation et des résultats d'action; il resterait pur et ne
+couplerait aucun composant UI à Supabase.
+
+### Dépendances
+
+Les commandes prescrites `npm audit --omit=dev --json`, `npm audit --json` et
+`npm outdated --json` nécessitent un envoi réseau du graphe de dépendances vers
+le registre npm. L'environnement a bloqué cette divulgation avant tout rapport;
+aucun résultat de vulnérabilité production ou développement, ni version récente
+de dépendance directe, ne peut donc être affirmé. Aucune installation, aucun
+`npm audit fix` et aucune réécriture du lockfile n'ont été exécutés. Le suivi
+requis est d'autoriser explicitement cette consultation du registre puis de
+consigner, séparément, advisory, chemin, sévérité, version corrigée et impact
+production/dev avant toute mise à jour ciblée.

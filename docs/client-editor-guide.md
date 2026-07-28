@@ -2,9 +2,9 @@
 
 ## Se connecter
 
-Ouvrez `/admin/login`, saisissez `m.rossiflorent@gmail.com`, puis utilisez le
-lien reçu par e-mail. Ce lien est temporaire. Aucune autre adresse ne peut
-accéder à l’éditeur.
+Ouvrez `/admin/login`, saisissez une adresse configurée dans la liste des
+administrateurs, puis utilisez le lien reçu par e-mail. Ce lien est temporaire.
+Seules les adresses configurées peuvent accéder à l’éditeur.
 
 ## Comprendre brouillon et publication
 
@@ -21,13 +21,15 @@ montrent le brouillon tel qu’il apparaîtra après publication.
 
 ## Modifier le site
 
-L’éditeur comporte quatre onglets :
+L’éditeur comporte cinq onglets :
 
 - **Site** : nom, e-mail public, localisation, navigation et réseaux sociaux;
 - **Accueil** : grand titre, introduction, textes de présentation et libellés
   des études de cas;
 - **À propos** : profil, services, clients, distinctions et processus;
 - **Projets** : contenu, médias, étude de cas, galerie et crédits.
+- **Légal** : mentions légales, confidentialité, hébergeur et date de mise à
+  jour dans les deux langues.
 
 Les champs FR et EN sont toujours présentés ensemble. Remplissez les deux
 langues avant de publier.
@@ -50,15 +52,17 @@ prêt.
 
 ## Ajouter les vidéos et les images
 
-Pour la grille de projets, ajoutez une affiche JPG, PNG ou WebP et un GIF
-d’aperçu court. L’affiche est toujours visible au repos. Sur ordinateur, le
-GIF se charge seulement au survol ou au focus clavier; sur mobile et pour les
-personnes qui réduisent les animations, l’affiche reste statique.
+Pour la grille de projets, ajoutez une affiche JPG, PNG ou WebP, puis une
+boucle MP4 courte; vous pouvez ajouter un GIF comme secours. L’affiche est
+toujours visible au repos. Sur ordinateur, la boucle MP4 se charge seulement au
+survol ou au focus clavier; si elle ne peut pas être lue, le GIF de secours est
+utilisé. Sur mobile et pour les personnes qui réduisent les animations,
+l’affiche reste statique.
 
-Conservez également une boucle MP4 ou WebM courte dans le champ vidéo. Elle
-n’est pas chargée par la grille, mais reste disponible dans l’étude de cas.
-Pour une page rapide, visez moins de 500 Ko pour l’affiche, moins de 2 Mo pour
-un GIF de trois secondes et moins de 4 Mo pour la boucle vidéo.
+Les fichiers WebM restent acceptés par la médiathèque, mais l’aperçu animé de
+la grille utilise actuellement une boucle MP4 et son GIF de secours. Pour une
+page rapide, visez moins de 500 Ko pour l’affiche, moins de 2 Mo pour un GIF de
+trois secondes et moins de 4 Mo pour la boucle vidéo.
 
 Chaque fichier téléversé est limité à 25 Mo.
 

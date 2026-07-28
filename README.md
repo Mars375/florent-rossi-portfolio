@@ -21,9 +21,9 @@ configurés peuvent modifier, prévisualiser et publier le site.
 
 Prérequis : Node.js 22.13 ou plus récent.
 
-```bash
+```powershell
 npm ci
-copy .env.example .env.local
+Copy-Item .env.example .env.local
 npm run dev
 ```
 
@@ -90,10 +90,10 @@ Projet de développement : `kzowrkfounzeytgtvndh` (`eu-west-3`).
 
 ## Resend et e-mails de connexion
 
-Le domaine expéditeur n’est volontairement pas configuré avant de connaître le
-domaine définitif du portfolio. Au lancement :
+Le domaine définitif du portfolio est `florentrossi.com`. Pour l’envoi des
+e-mails de connexion :
 
-1. Ajouter le domaine définitif du portfolio dans Resend.
+1. Ajouter `florentrossi.com` dans Resend.
 2. Ajouter dans le DNS les enregistrements SPF et DKIM retournés.
 3. Attendre que Resend affiche le domaine comme vérifié.
 4. Créer une clé Resend limitée à l’envoi et à ce domaine.
