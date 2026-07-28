@@ -28,17 +28,17 @@ qui restera nécessaire après déploiement quand il y en a un.
 | P0 | 0 | 0 | 0 |
 | P1 | 0 | 0 | 0 |
 | P2 | 5 | 5 | 0 |
-| P3 | 2 | 2 | 0 |
-| **Total** | **7** | **7** | **0** |
+| P3 | 3 | 3 | 0 |
+| **Total** | **8** | **8** | **0** |
 
 | Lot | Découverts | Ouverts | État |
 | --- | ---: | ---: | --- |
 | Fiabilité et sécurité | 1 | 0 | corrigé et validé localement |
 | Performance et expérience | 1 | 0 | corrigé et validé localement |
-| Accessibilité et SEO | 4 | 0 | corrigé et validé localement |
+| Accessibilité et SEO | 5 | 0 | corrigé et validé localement |
 | Structure et maintenabilité | 1 | 0 | corrigé et validé localement |
 
-Les 7 constats restent comptés comme découverts pour conserver la trace de
+Les 8 constats restent comptés comme découverts pour conserver la trace de
 l'audit ; aucun n'est un défaut ouvert de la branche. Les contrôles qui exigent
 un déploiement ou une autorité externe figurent uniquement dans le backlog de
 suivi, sans être qualifiés de vulnérabilité produit.
@@ -151,6 +151,25 @@ suivi, sans être qualifiés de vulnérabilité produit.
   clavier visuel avec un Browser opérationnel.
 - **Lot :** Accessibilité et SEO. **État :** corrigé dans la branche.
 
+### P3 — URL Open Graph canonique absente des pages publiques
+
+- **État initial / preuve :** la matrice SSR live observait l'absence de
+  `og:url` dans les six documents contrôlés (accueil, à-propos et étude de cas
+  en FR/EN).
+- **Impact :** les plateformes de partage ne reçoivent pas l'URL canonique
+  localisée de la page, ce qui dégrade la cohérence des aperçus sociaux.
+- **Cause racine :** les cinq générateurs publics de métadonnées ne
+  renseignaient pas `openGraph.url`.
+- **Correction appliquée :** `openGraph.url` est maintenant défini à partir de
+  l'URL canonique localisée dans `app/[locale]/page.tsx`, `about/page.tsx`,
+  `legal/page.tsx`, `privacy/page.tsx` et `work/[slug]/page.tsx`.
+- **Validation :** test de métadonnées rouge puis vert,
+  `public page metadata declares its canonical Open Graph URL`, dans
+  `tests/indexation.test.ts`; tests SEO/A11y ciblés et build verts.
+- **Contrôle post-déploiement :** rejouer la matrice SSR et vérifier `og:url`
+  sur les pages localisées de production.
+- **Lot :** Accessibilité et SEO. **État :** corrigé dans la branche.
+
 ### P3 — Requête favicon 404 dans les mesures Lighthouse
 
 - **État initial / preuve :** les douze rapports Lighthouse relevaient une
@@ -195,59 +214,80 @@ suivi, sans être qualifiés de vulnérabilité produit.
 - Secrets : aucun `.env`, clé ou motif de secret ciblé n'est suivi dans les
   sources/documentation inspectées.
 
-## Backlog de suivi
+## Backlog de correction
 
-Les lots de correction sont vides : tous les constats confirmés sont corrigés
-et validés dans la branche. Les éléments suivants sont les seuls suivis
-résiduels ; ils demandent une autorité externe ou une mesure live et ne sont pas
-des défauts produit ouverts.
+Tous les lots ci-dessous sont **réalisés et fermés dans la branche** : ils ne
+constituent pas des défauts ouverts. L'ordre consigne les dépendances suivies,
+et les contrôles externes requis après intégration sont isolés ensuite.
 
-### Lot 1 — Fiabilité et sécurité
+### Lot 1 — Fiabilité et sécurité — réalisé
 
-- **Suivi :** réauthentifier le connecteur Supabase puis relancer sans mutation
+- **Ordre / dépendance :** protéger d'abord les sorties du générateur avant de
+  relancer la suite média complète.
+- **Correction réalisée :** génération média atomique (P2).
+- **Succès utilisateur :** une interruption locale ne remplace plus une boucle,
+  affiche ou carte sociale suivie par un fichier partiel.
+- **Fichiers/tests :** `scripts/generate-demo-media.mjs`,
+  `tests/demo-media.test.ts`; test d'interruption, suite 110/110, ESLint,
+  TypeScript et build.
+- **Risque :** faible ; renommage après succès, sans mutation distante.
+
+### Lot 2 — Performance et expérience — réalisé
+
+- **Ordre / dépendance :** remplacer la politique par défaut après avoir rejeté
+  la valeur `immutable` incompatible avec les noms de médias stables.
+- **Correction réalisée :** cache des médias `/media/florent/*` une heure avec
+  revalidation obligatoire (P2).
+- **Succès utilisateur :** le navigateur peut réutiliser une affiche ou un
+  aperçu pendant une heure sans figer un média régénérable.
+- **Fichiers/tests :** `next.config.ts`, test `runtime-config`, manifeste Next,
+  TypeScript et build.
+- **Risque :** faible ; portée limitée au préfixe média.
+
+### Lot 3 — Accessibilité et SEO — réalisé
+
+- **Ordre / dépendance :** restaurer les landmarks, publier l'indexation et
+  métadonnées localisées, puis corriger les défauts visuels mesurés.
+- **Corrections réalisées :** footer sur legal/privacy et études de cas (P2),
+  robots/sitemap et protection admin (P2), consentement vidéo contrasté (P2),
+  `og:url` canonique localisé (P3), favicon SVG déclaré (P3).
+- **Succès utilisateur :** navigation de lecteur d'écran complète, exploration
+  et partage social localisés, consentement lisible et absence de requête
+  d'icône implicite.
+- **Fichiers/tests :** vues footer et `tests/footer-links.test.tsx`;
+  `app/robots.ts`, `app/sitemap.ts`, générateurs de metadata et
+  `tests/indexation.test.ts`; styles de consentement et tests A11y/SEO ; build
+  et Lighthouse local.
+- **Risque :** moyen ; modifications de rendu et métadonnées, validées par
+  tests SSR/CSS et build.
+
+### Lot 4 — Structure et maintenabilité — réalisé
+
+- **Ordre / dépendance :** vérifier les comportements réels puis aligner la
+  documentation, sans refactorer les éditeurs sans signal reproductible.
+- **Correction réalisée :** guide d'exploitation de l'éditeur aligné (P3).
+- **Succès utilisateur :** les administrateurs disposent des bonnes règles
+  d'accès, onglets, formats de médias, domaine e-mail et commande Windows.
+- **Fichiers/tests :** README et guide ; comparaison avec `AdminEditor`,
+  `ProjectCard`, schéma média et configuration.
+- **Risque :** faible ; documentation seulement.
+
+## Suivis externes, hors constats ouverts
+
+- **Supabase OAuth :** réauthentifier le connecteur, puis relancer sans mutation
   les sept lectures (tables, advisors sécurité/performance, logs auth/Postgres/
-  Storage) afin de comparer l'état actif aux migrations locales.
-- **Bloqueur :** OAuth Supabase (`OAuth authorization required`).
-- **Critère de succès :** résultats read-only consignés, sans écriture ni
-  changement de configuration.
-- **Fichiers/tests :** aucun changement attendu ; appels connecteur read-only.
-- **Risque :** faible.
-
-### Lot 2 — Performance et expérience
-
-- **Suivi :** après déploiement autorisé, refaire les `HEAD` JPG/GIF/MP4 et une
-  mesure de visites répétées pour confirmer le header de cache déployé.
-- **Bloqueur :** déploiement hors périmètre de l'audit.
-- **Critère de succès :** `Cache-Control: public, max-age=3600, must-revalidate`
-  servi sur les trois médias.
-- **Fichiers/tests :** aucun changement attendu ; `HEAD` live et Lighthouse.
-- **Risque :** faible.
-
-### Lot 3 — Accessibilité et SEO
-
-- **Suivi :** après déploiement autorisé, rejouer HTTP/SSR (footer, robots,
-  sitemap, metadata) puis le parcours clavier, les interactions, le viewport
-  mobile et la console.
-- **Bloqueur :** déploiement et Browser Codex ; le kernel échoue sur
-  `require is not defined in ES module scope` avant toute navigation.
-- **Critère de succès :** endpoints et landmarks servis en production, aucune
-  erreur favicon/contraste dans Lighthouse, parcours navigateur observé.
-- **Fichiers/tests :** aucun changement attendu ; Browser, `curl`/`HEAD` et
-  Lighthouse live.
-- **Risque :** moyen.
-
-### Lot 4 — Structure et maintenabilité
-
-- **Suivi :** exécuter `npm audit --omit=dev --json`, `npm audit --json` et
-  `npm outdated --json` seulement après autorisation explicite de la
-  consultation réseau ; traiter séparément les résultats éventuels.
-- **Bloqueur :** le sandbox a bloqué l'audit, puis l'escalade a été refusée car
-  elle enverrait le graphe de dépendances au registre npm.
-- **Critère de succès :** résultats réseau consignés avec contexte prod/dev,
-  advisory, chemin, sévérité et version corrigée quand applicables.
-- **Fichiers/tests :** aucun changement attendu à ce stade ; commandes npm
-  read-only autorisées.
-- **Risque :** faible.
+  Storage). Bloqueur : `OAuth authorization required`. Succès : état distant
+  read-only consigné et comparé aux migrations locales. Risque faible.
+- **Post-déploiement :** après déploiement autorisé, rejouer les `HEAD` médias,
+  la matrice HTTP/SSR (footer, robots, sitemap, `og:url`, favicon), Lighthouse,
+  le clavier, les interactions, mobile et la console. Bloqueurs : déploiement
+  hors périmètre et Browser Codex ESM. Succès : comportements servis en
+  production et mesures live consignées. Risque moyen.
+- **npm réseau :** après autorisation explicite, exécuter `npm audit --omit=dev
+  --json`, `npm audit --json` et `npm outdated --json`. Bloqueur : le sandbox
+  et l'escalade ont refusé l'envoi du graphe au registre npm. Succès : résultats
+  avec contexte prod/dev, advisory, chemin, sévérité et version corrigée si
+  applicable. Risque faible.
 
 ## Limites factuelles
 
