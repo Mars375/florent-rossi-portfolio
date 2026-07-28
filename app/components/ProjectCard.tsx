@@ -8,6 +8,35 @@ import {
   projectPreviewSources,
 } from "../../lib/content/preview";
 
+export type ProjectCardInputModality = "keyboard" | "pointer" | null;
+
+export function shouldActivateProjectCardFocus(
+  lastInput: ProjectCardInputModality,
+): boolean {
+  return lastInput === "keyboard";
+}
+
+export function shouldShowProjectCardGif({
+  previewActive,
+  videoUrl,
+  gifUrl,
+  videoFailed,
+  gifFailed,
+}: {
+  previewActive: boolean;
+  videoUrl: string;
+  gifUrl: string;
+  videoFailed: boolean;
+  gifFailed: boolean;
+}): boolean {
+  return (
+    previewActive &&
+    Boolean(gifUrl) &&
+    !gifFailed &&
+    (!videoUrl || videoFailed)
+  );
+}
+
 export function ProjectCard({
   project,
   locale,
@@ -23,6 +52,7 @@ export function ProjectCard({
 }) {
   const { videoUrl, gifUrl } = projectPreviewSources(project);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const lastInputRef = useRef<ProjectCardInputModality>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -41,6 +71,22 @@ export function ProjectCard({
     motion.addEventListener("change", update);
     return () => {
       motion.removeEventListener("change", update);
+    };
+  }, []);
+
+  useEffect(() => {
+    const recordPointerInput = () => {
+      lastInputRef.current = "pointer";
+    };
+    const recordKeyboardInput = () => {
+      lastInputRef.current = "keyboard";
+    };
+
+    window.addEventListener("pointerdown", recordPointerInput);
+    window.addEventListener("keydown", recordKeyboardInput);
+    return () => {
+      window.removeEventListener("pointerdown", recordPointerInput);
+      window.removeEventListener("keydown", recordKeyboardInput);
     };
   }, []);
 
@@ -75,8 +121,13 @@ export function ProjectCard({
     });
   const previewActive = mousePreviewActive || focusPreviewActive;
   const showVideo = previewActive && Boolean(videoUrl) && !videoFailed;
-  const showGif =
-    previewActive && videoFailed && Boolean(gifUrl) && !gifFailed;
+  const showGif = shouldShowProjectCardGif({
+    previewActive,
+    videoUrl,
+    gifUrl,
+    videoFailed,
+    gifFailed,
+  });
   const previewShowing = showVideo || showGif;
 
   useEffect(() => {
@@ -117,8 +168,10 @@ export function ProjectCard({
           className="project-media-link focus-ring"
           href={projectHref}
           onFocus={() => {
-            activate("focus");
-            setFocused(true);
+            if (shouldActivateProjectCardFocus(lastInputRef.current)) {
+              activate("focus");
+              setFocused(true);
+            }
           }}
           onBlur={() => setFocused(false)}
           aria-label={`${viewLabel}: ${project.title[locale]}`}

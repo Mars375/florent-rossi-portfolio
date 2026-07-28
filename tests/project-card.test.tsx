@@ -5,7 +5,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import postcss from "postcss";
 import content from "../content/default.json";
 import { parsePortfolioContent } from "../content/schema";
-import { ProjectCard } from "../app/components/ProjectCard";
+import {
+  ProjectCard,
+  shouldActivateProjectCardFocus,
+  shouldShowProjectCardGif,
+} from "../app/components/ProjectCard";
 
 const project = parsePortfolioContent(content).projects[0];
 
@@ -24,6 +28,29 @@ test("renders only the static poster before an eligible interaction", () => {
   assert.doesNotMatch(markup, /afterdark-loop\.mp4/);
   assert.doesNotMatch(markup, /<video/);
   assert.match(markup, /En lecture 00:03/);
+});
+
+test("keeps a touch-origin focus static while allowing keyboard focus", () => {
+  assert.equal(shouldActivateProjectCardFocus("pointer"), false);
+  assert.equal(shouldActivateProjectCardFocus("keyboard"), true);
+});
+
+test("shows a directly configured GIF during an active preview", () => {
+  const directGif = structuredClone(project);
+  directGif.preview.type = "gif";
+  directGif.preview.url = "/media/florent/direct-preview.gif";
+  directGif.preview.fallbackGifUrl = "";
+
+  assert.equal(
+    shouldShowProjectCardGif({
+      previewActive: true,
+      videoUrl: "",
+      gifUrl: directGif.preview.url,
+      videoFailed: false,
+      gifFailed: false,
+    }),
+    true,
+  );
 });
 
 test("card and case-study media styles never scale media on hover", async () => {
