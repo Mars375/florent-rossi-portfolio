@@ -165,12 +165,16 @@ Remediation Protocol before Task 1 is accepted.
 
 - [ ] **Step 4: Record the production deployment baseline**
 
-Use the GitHub commit-status connector for the audited commit.
+Use the GitHub commit-status connector for `origin/main`, the deployed
+production-source reference. `HEAD` is the isolated audit branch and is
+intentionally not deployed before final integrated review.
 
 Expected:
 
 - the `Vercel` context is `success`;
-- the deployed commit equals the audited commit.
+- the deployed commit equals the recorded `origin/main` reference;
+- the local audit `HEAD` is recorded separately and may differ from
+  `origin/main` while deployment is deferred.
 
 Add the deployment status and Vercel target URL to the baseline table.
 

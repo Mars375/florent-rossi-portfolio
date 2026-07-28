@@ -25,9 +25,17 @@ déployée ne sont pas modifiés pendant le travail isolé.
 | ESLint | aucune erreur | 12,2 s | 0 |
 | TypeScript | aucune erreur | 8,8 s | 0 |
 | Build Next.js | `Compiled successfully` | 22,8 s (compilation : 6,8 s) | 0 |
-| Déploiement audité | Vercel `success` — commit `f044dc363ab72abce2b20a607c33ef0ef3acafe8` | n/a | succès |
+| Référence de production déployée | Vercel `success` — `origin/main` = `f044dc363ab72abce2b20a607c33ef0ef3acafe8` | n/a | succès |
 
 URL cible Vercel : https://vercel.com/mars375s-projects/atelier-vif-portfolio/7JqTYQST2wfKDUi8i3w5TippGi2s
+
+La divergence entre le HEAD local d’audit
+`90888dc01a25b9eb1c482a49f9961c46e4357d04` et `origin/main`
+`f044dc363ab72abce2b20a607c33ef0ef3acafe8` est intentionnelle et prouvée :
+le travail se déroule dans une branche isolée, tandis que le plan interdit tout
+déploiement avant la revue intégrée finale. Le statut Vercel contrôle donc
+explicitement la référence de production déployée (`origin/main`), pas le HEAD
+local non déployé.
 
 La première exécution de tests a échoué après 211,944 s : 107 réussites et
 2 échecs liés à `orbital-radio-loop.mp4` (atome `moov` absent et checksum
@@ -60,6 +68,7 @@ consignée dans le tableau.
 
 ## Limites de l’audit
 
-- Cette baseline contrôle la branche isolée et le statut GitHub/Vercel du
-  commit déployé de référence ; elle ne modifie ni Supabase, ni Vercel, ni la
-  production, et ne remplace pas une vérification navigateur de production.
+- Cette baseline contrôle séparément la branche isolée et le statut
+  GitHub/Vercel de `origin/main`, référence de production déployée. Elle ne
+  modifie ni Supabase, ni Vercel, ni la production, et ne remplace pas une
+  vérification navigateur de production.
