@@ -29,6 +29,7 @@ test("renders only the static poster before an eligible interaction", () => {
 test("card and case-study media styles never scale media on hover", async () => {
   const root = postcss.parse(await readFile("app/globals.css", "utf8"));
   const forbidden: string[] = [];
+  let progressAnimation = "";
 
   root.walkRules((rule) => {
     const targetsCardHover =
@@ -40,6 +41,13 @@ test("card and case-study media styles never scale media on hover", async () => 
       rule.selector.includes(".project-media video");
 
     rule.walkDecls((declaration) => {
+      if (
+        rule.selector === ".preview-progress.is-active" &&
+        declaration.prop === "animation"
+      ) {
+        progressAnimation = declaration.value;
+      }
+
       if (
         (targetsCardHover || targetsCaseHover) &&
         declaration.prop === "transform" &&
@@ -59,4 +67,5 @@ test("card and case-study media styles never scale media on hover", async () => 
   });
 
   assert.deepEqual(forbidden, []);
+  assert.equal(progressAnimation, "preview-progress 3s linear infinite");
 });
