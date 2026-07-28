@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Produce a reproducible, evidence-backed production audit of `florentrossi.com`, prioritized from P0 to P3, without changing production behavior.
+**Goal:** Produce a reproducible, evidence-backed production audit of `florentrossi.com`, prioritized from P0 to P3, and immediately remediate every confirmed defect on the isolated branch without intentionally changing the public design, editorial content or URL contract.
 
-**Architecture:** The audit is a read-only phase that records evidence in one versioned report. Public behavior, administration and security, performance, accessibility and SEO, then architecture and operations are inspected independently; the final task consolidates findings into four correction backlogs. Each correction backlog will receive its own implementation plan only after the audit report is reviewed.
+**Architecture:** Public behavior, administration and security, performance, accessibility and SEO, then architecture and operations are inspected independently. Within each task, every confirmed defect goes through root-cause analysis, a failing regression test, the smallest safe fix and independent review before the next task starts. The report records both the original evidence and the verified final state; deployment remains deferred until the integrated branch passes final review.
 
 **Tech Stack:** Next.js 16, React 19, TypeScript 5.9, Supabase, Vercel, Node.js 22, Node test runner through `tsx`, ESLint 9, Lighthouse CLI, Codex Browser.
 
@@ -17,21 +17,44 @@
 - Every corrected bug must receive a regression test.
 - Keep an optimization only when it creates a measurable gain or a clear structural simplification.
 - Every correction lot must remain independently deployable and verifiable.
-- This plan creates or edits audit documentation only; it does not modify production code, Supabase data, Vercel configuration or portfolio content.
-- Do not publish a correction plan until the completed audit report has been reviewed.
+- Confirmed defects are fixed in the isolated worktree during Tasks 2–6; do not defer a safe in-scope fix merely because the audit is still running.
+- Before implementation, establish the cause and add a regression test that demonstrably fails for the confirmed defect.
+- Keep fixes minimal and commit them with their tests and updated audit evidence.
+- A second agent must review each completed task for specification compliance and code quality before the next task starts.
+- Do not mutate live Supabase data, Vercel configuration, portfolio content or the deployed production branch during the audit-remediation.
+- Do not deploy or merge until the complete integrated branch passes final review and all verification gates.
 
 ---
 
 ## File Structure
 
 - Create `docs/audits/2026-07-28-production-audit.md` as the single audit ledger and final report.
-- Modify only that report during Tasks 1–7.
+- Modify that report throughout Tasks 1–7. Tasks 2–6 may also modify the
+  smallest necessary source, test and documentation files for confirmed defects.
 - Use `C:\tmp\florent-rossi-audit\` for Lighthouse JSON, the temporary
   `summarize-lighthouse.mjs` helper, response headers and other transient
   evidence. Never commit this directory.
 - Read production code, tests, migrations and configuration without modifying them.
 
-The report owns evidence, severity, cause and recommendations. Temporary files own raw machine output. Future correction plans will own implementation details after findings are accepted.
+The report owns evidence, severity, cause, remediation and verification status.
+Temporary files own raw machine output. The task commits own regression tests and
+minimal implementation changes.
+
+## Continuous Remediation Protocol
+
+For every `FAIL` or source-level defect confirmed during Tasks 2–6:
+
+1. reproduce it and record the evidence in the report;
+2. establish the smallest verified root cause;
+3. add a focused regression test and run it to observe the expected failure;
+4. implement the smallest safe correction without unrelated refactoring;
+5. run the focused test, the relevant task gates and `git diff --check`;
+6. update the finding with the fix commit and final verification state;
+7. submit the complete task diff to an independent reviewer.
+
+Observations without reproducible impact stay documented as observations and are
+not changed speculatively. Remote data/configuration changes require separate
+explicit authorization; code-side remediations do not.
 
 ---
 
@@ -46,10 +69,10 @@ The report owns evidence, severity, cause and recommendations. Temporary files o
 - Read: `docs/client-editor-guide.md`
 
 **Interfaces:**
-- Consumes: current Git commit, package scripts and the validated specification at `docs/superpowers/specs/2026-07-28-production-audit-refactor-design.md`.
+- Consumes: isolated branch base, deployed commit, package scripts and the validated specification at `docs/superpowers/specs/2026-07-28-production-audit-refactor-design.md`.
 - Produces: a report header, environment inventory and baseline verification table used by every later task.
 
-- [ ] **Step 1: Confirm the audit starts from a clean synchronized tree**
+- [ ] **Step 1: Confirm the audit starts from the intended isolated worktree**
 
 Run:
 
@@ -64,11 +87,13 @@ node --version
 Expected:
 
 - `git status --short` prints nothing.
-- The branch is `main`.
-- `HEAD` equals `origin/main`.
+- The branch is `audit/production-remediation`.
+- `HEAD` contains the approved audit planning commits; `origin/main` is recorded
+  separately as the deployed-source reference.
 - Node is `v22.13.0` or newer.
 
-If the tree is dirty or the commits differ, stop and report the exact state before continuing.
+If the tree contains changes outside the approved plan amendment, stop and report
+the exact state before continuing.
 
 - [ ] **Step 2: Create the audit report with fixed scope and evidence rules**
 
@@ -84,10 +109,10 @@ Production : https://florentrossi.com
 
 ## Méthode
 
-L’audit est en lecture seule. Chaque constat contient une preuve reproductible,
-une sévérité P0 à P3, un impact, une cause racine, une correction proposée et
-un critère de validation. Les données Supabase, le contenu public et la
-configuration Vercel ne sont pas modifiés pendant le diagnostic.
+L’audit-remédiation conserve une preuve reproductible pour chaque constat :
+sévérité P0 à P3, impact, cause racine, correction appliquée et validation.
+Les données Supabase, le contenu public, la configuration Vercel et la branche
+déployée ne sont pas modifiés pendant le travail isolé.
 
 ## Baseline de vérification
 
@@ -100,8 +125,9 @@ configuration Vercel ne sont pas modifiés pendant le diagnostic.
 
 Use `apply_patch`; do not use shell redirection to create the file. Under
 `## Référence`, add four literal bullet lines containing the exact commit and
-Node.js values observed in Step 1, the branch `main`, and the Supabase region
-`eu-west-3`. Do not leave command names or instructional prose in the report.
+Node.js values observed in Step 1, the branch `audit/production-remediation`,
+the `origin/main` deployed-source reference, and the Supabase region `eu-west-3`.
+Do not leave command names or instructional prose in the report.
 
 - [ ] **Step 3: Run the complete automated baseline**
 
@@ -133,7 +159,9 @@ Expected:
 - TypeScript exits `0`;
 - Next.js reports `Compiled successfully`.
 
-Record the exact test count, duration and exit status for all four gates under `## Baseline de vérification`. A failure is a finding; do not repair it during this plan.
+Record the exact test count, duration and exit status for all four gates under
+`## Baseline de vérification`. A failure is a finding and follows the Continuous
+Remediation Protocol before Task 1 is accepted.
 
 - [ ] **Step 4: Record the production deployment baseline**
 
@@ -285,7 +313,9 @@ Expected:
 - `/admin/login` is reachable;
 - redirect targets remain on `florentrossi.com`.
 
-Record status and `Location` headers. Do not request a magic link and do not submit an email during this read-only audit.
+Record status and `Location` headers. Do not request a magic link and do not
+submit an email because live authentication actions are outside the authorized
+remote-mutation scope.
 
 - [ ] **Step 2: Trace the authorization and publication path**
 
@@ -785,7 +815,7 @@ Record:
 
 A large file is not automatically a defect; require a concrete cohesion, testing or change-risk impact before creating a finding.
 
-- [ ] **Step 2: Map proposed component boundaries without changing code**
+- [ ] **Step 2: Map component boundaries and remediate confirmed cohesion defects**
 
 For `AdminEditor.tsx` and `ProjectEditor.tsx`, document:
 
@@ -796,7 +826,7 @@ For `AdminEditor.tsx` and `ProjectEditor.tsx`, document:
 - independent sections that can expose typed `value` and `onChange` interfaces;
 - behavior that must remain stable during a future split.
 
-The future boundary proposal must name exact units, such as:
+The boundary proposal must name exact units, such as:
 
 ```text
 AdminEditor
@@ -814,7 +844,9 @@ ProjectEditor
 └── ProjectCreditsFields
 ```
 
-This is a recommendation, not an implementation in the audit plan.
+If the inventory confirms concrete cohesion, testing or change-risk impact,
+apply the smallest behavior-preserving split through the Continuous Remediation
+Protocol. Do not refactor solely because a file exceeds a line threshold.
 
 - [ ] **Step 3: Audit production and development dependencies**
 
@@ -937,13 +969,15 @@ Within each lot:
 - name the likely files and tests;
 - estimate risk as `faible`, `moyen` or `élevé`.
 
-Do not write implementation code or create the correction plans yet.
+Summarize both remediated findings and any residual items that could not be
+safely addressed within the authorized scope.
 
 - [ ] **Step 4: Document audit limitations**
 
 Record only limitations that actually occurred, such as:
 
-- an authenticated live admin action intentionally not executed because the audit is read-only;
+- an authenticated live admin action intentionally not executed because remote
+  mutations are outside the authorized scope;
 - a browser capability that could not emulate reduced motion;
 - a rate-limited Lighthouse or Supabase endpoint;
 - absence of real-user Core Web Vitals.
@@ -969,7 +1003,8 @@ Then manually verify:
 - every specification axis has evidence;
 - every finding has severity, proof, impact, cause, correction, validation and lot;
 - counts equal the actual findings;
-- no production change is included.
+- every code change maps to a confirmed finding and verified remediation;
+- no live production, Supabase-data or Vercel-configuration mutation is included.
 
 - [ ] **Step 6: Remove transient audit evidence**
 
@@ -1021,4 +1056,6 @@ Report:
 - which correction lot should be planned first;
 - any audit limitation.
 
-Stop for user review. After approval, create one separate implementation plan for the first correction lot.
+Present the fully reviewed audit-remediation branch for integration. Any residual
+finding requiring remote authority or a materially broader redesign receives a
+separate follow-up plan.

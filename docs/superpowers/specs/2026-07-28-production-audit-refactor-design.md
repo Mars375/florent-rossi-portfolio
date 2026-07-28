@@ -11,9 +11,10 @@ confirmés et améliorer ses performances, son accessibilité, sa sécurité et 
 maintenabilité sans modifier volontairement son design, ses contenus ni ses URLs
 publiques.
 
-Le travail suivra une stratégie incrémentale « production-first ». Le diagnostic
-sera séparé des corrections, puis les changements seront livrés par lots
-réversibles et vérifiés indépendamment.
+Le travail suivra une stratégie incrémentale « production-first ». Chaque axe
+est diagnostiqué puis ses défauts confirmés sont corrigés immédiatement dans le
+worktree isolé, avant de passer à l’axe suivant. Chaque lot reste réversible,
+testé et vérifié indépendamment avant toute intégration ou mise en production.
 
 ## Invariants
 
@@ -27,9 +28,14 @@ réversibles et vérifiés indépendamment.
   une simplification structurelle nette.
 - Chaque lot doit pouvoir être déployé et contrôlé indépendamment.
 
-## Phase 1 — Diagnostic
+## Audit-remédiation continu
 
-Le diagnostic initial ne modifie pas le code de production. Il couvre six axes.
+Le diagnostic et la correction forment une même boucle sur six axes. Pour chaque
+défaut confirmé : établir la cause racine, écrire un test de non-régression qui
+échoue, appliquer la correction minimale, vérifier les portes de qualité
+pertinentes, puis faire relire le lot par un second agent. Le code déployé,
+les données Supabase et la configuration Vercel ne sont pas modifiés pendant
+l’audit ; seule la branche isolée évolue jusqu’à la revue intégrée finale.
 
 ### Fonctionnel
 
