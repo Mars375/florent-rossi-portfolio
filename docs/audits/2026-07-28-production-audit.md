@@ -77,39 +77,33 @@ consignée dans le tableau.
 
 Référence auditée : `b922be7942e0d7a3f876defadc650d1a82f2a5ba`.
 
-### Matrice de routes desktop (1440 × 900)
+### Matrice HTTP/SSR live (hors Browser)
 
-La surface Codex Browser n’a pas pu démarrer avant toute navigation : son
-kernel échoue avec `ReferenceError: require is not defined in ES module scope`
-depuis `C:\\Users\\loic_\\package.json` (`type: module`). Les résultats ci-dessous
-ne sont donc pas inférés des tests : chaque contrôle HTTP, `html[lang]`,
-header/main/footer et liens internes est **NOT TESTABLE** en production.
+Le 28-07-2026, `Invoke-WebRequest -SkipHttpErrorCheck` a lu chaque URL de
+`https://florentrossi.com`. Cette preuve HTTP/SSR live est distincte du
+navigateur : elle établit le statut, `html[lang]` et les landmarks rendus, mais
+pas les interactions ou l’affichage au viewport. Les liens extraits sont soit
+relatifs/vers `florentrossi.com`, soit les liens externes éditoriaux attendus
+(réseaux, Vercel ou CNIL) ; aucun lien interne n’est dirigé vers un autre
+domaine.
 
-| Route | Navigation / landmarks / liens internes | `html[lang]` | État |
-| --- | --- | --- | --- |
-| `/fr` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
-| `/en` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
-| `/fr/about` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
-| `/en/about` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
-| `/fr/legal` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
-| `/en/legal` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
-| `/fr/privacy` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
-| `/en/privacy` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
-| `/fr/work/afterdark` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
-| `/en/work/afterdark` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
-| `/fr/work/nuit-35` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
-| `/en/work/nuit-35` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
-| `/fr/work/orbital-radio` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
-| `/en/work/orbital-radio` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
-| `/fr/work/material-memory` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
-| `/en/work/material-memory` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
-| `/fr/work/sans-titre-08` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
-| `/en/work/sans-titre-08` | NOT TESTABLE | NOT TESTABLE | NOT TESTABLE |
-| `/fr/work/audit-slug-inexistant` | NOT TESTABLE (état 404 attendu) | NOT TESTABLE | NOT TESTABLE |
+| Route | HTTP | `lang` | header/main/footer | État |
+| --- | --- | --- | --- | --- |
+| `/fr`, `/en` | 200 | fr, en | 1 / 1 / 1 | PASS |
+| `/fr/about`, `/en/about` | 200 | fr, en | 1 / 1 / 1 | PASS |
+| `/fr/legal`, `/en/legal` | 200 | fr, en | 2 / 1 / 0 | P2 ci-dessous |
+| `/fr/privacy`, `/en/privacy` | 200 | fr, en | 2 / 1 / 0 | P2 ci-dessous |
+| `/fr/work/afterdark`, `/en/work/afterdark` | 200 | fr, en | 2 / 1 / 0 | P2 ci-dessous |
+| `/fr/work/nuit-35`, `/en/work/nuit-35` | 200 | fr, en | 2 / 1 / 0 | P2 ci-dessous |
+| `/fr/work/orbital-radio`, `/en/work/orbital-radio` | 200 | fr, en | 2 / 1 / 0 | P2 ci-dessous |
+| `/fr/work/material-memory`, `/en/work/material-memory` | 200 | fr, en | 2 / 1 / 0 | P2 ci-dessous |
+| `/fr/work/sans-titre-08`, `/en/work/sans-titre-08` | 200 | fr, en | 2 / 1 / 0 | P2 ci-dessous |
+| `/fr/work/audit-slug-inexistant` | 404 | absent | 0 / 0 / 0 | PASS (not-found) |
 
-Les slugs ont été lus depuis `content/default.json`. L’inspection de la branche
-confirme que `WorkPage` filtre les projets publiés et appelle `notFound()` pour
-un slug absent ; cette preuve de code ne remplace pas la vérification live.
+Résultat : 18 routes publiées répondent 200 ; la route invalide répond 404.
+Les slugs sont issus de `content/default.json`. Les 14 absences de footer sont
+la production actuellement déployée ; la correction de branche reste à
+déployer après revue intégrée.
 
 ### Interactions desktop
 
@@ -142,12 +136,36 @@ cas est **NOT TESTABLE** : le navigateur n’a pas atteint la première navigati
 Aucune erreur applicative, ni aucun échec tiers de vidéo, n’est donc déclaré sur
 la base de cette exécution.
 
+### P2 — Landmark footer absent de 14 routes publiques
+
+- **Preuve reproductible :** la matrice HTTP/SSR live ci-dessus observe zéro
+  `<footer>` sur les quatre routes legal/privacy et les dix études de cas,
+  tandis que les accueils et pages à-propos en ont un. Le test rouge local
+  `renders a footer landmark on legal and project public views` échouait avant
+  correction sur `LegalView` sans `<footer>`.
+- **Impact :** le contrat public de landmark footer et la navigation de
+  lecteur d’écran sont incomplets sur ces routes.
+- **Cause racine :** `FooterLinks` produit volontairement un `<div>`
+  réutilisable. `LegalView` et `ProjectView` l’inséraient sans enveloppe de
+  landmark ; les vues accueil et à-propos possèdent déjà leur propre `<footer>`.
+- **Correction minimale :** les deux vues non conformes enveloppent uniquement
+  leur instance de `FooterLinks` dans `<footer>`, sans modifier les vues déjà
+  conformes ni créer de footer imbriqué.
+- **Validation :** après correction, le test ciblé est vert (4/4) et son rendu
+  SSR local contient le landmark dans les deux variantes légales et l’étude de
+  cas. La validation HTTP production du footer reste en attente du déploiement
+  autorisé après revue.
+- **Statut :** corrigé dans la branche d’audit ; non encore vérifiable sur la
+  production non modifiée.
+
 ### Gates ciblés
 
 - `node node_modules/tsx/dist/cli.mjs --test tests/project-card.test.tsx` :
   9 réussites, 0 échec (5,26 s).
-- `node node_modules/tsx/dist/cli.mjs --test tests/personal-portfolio.test.ts tests/footer-links.test.tsx` :
-  9 réussites, 0 échec (1,97 s).
+- `node node_modules/tsx/dist/cli.mjs --test tests/footer-links.test.tsx` :
+  4 réussites, 0 échec (rendu SSR local inclus), après un rouge observé.
+- `node node_modules/tsx/dist/cli.mjs --test tests/personal-portfolio.test.ts` :
+  6 réussites, 0 échec.
 - `git diff --check` : succès.
 
 `npm test` n’était pas exécutable dans cet environnement parce que le shim npm
@@ -156,5 +174,6 @@ les mêmes tests ciblés ont été lancés directement via le CLI `tsx` du proje
 
 ### Constats publics confirmés
 
-Aucun défaut P0–P3 n’est confirmé par cette exécution : l’absence de navigateur
-empêche d’établir une preuve live, et aucun correctif de code n’est justifié.
+Le P2 de landmark footer est confirmé et corrigé dans la branche. Les clics,
+hover/focus, thème, viewport desktop/mobile, mouvement réduit live et console
+restent **NOT TESTABLE** tant que le kernel Codex Browser ne démarre pas.
