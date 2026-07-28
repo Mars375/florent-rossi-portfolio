@@ -1,5 +1,9 @@
 import { z } from "zod";
 import { parseVideoSource } from "../lib/content/video";
+import {
+  defaultLegalContent,
+  legalContentSchema,
+} from "./legal";
 
 const translatedText = z
   .string()
@@ -190,6 +194,7 @@ export const portfolioContentSchema = z
       fr: projectPageSchema,
     }),
     projects: z.array(projectSchema).min(1),
+    legal: legalContentSchema.default(defaultLegalContent),
   })
   .superRefine((content, context) => {
     const uniqueFields = ["id", "slug", "order"] as const;

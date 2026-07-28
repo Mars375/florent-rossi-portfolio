@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import content from "../content/default.json";
+import { defaultLegalContent } from "../content/legal";
 import { parsePortfolioContent } from "../content/schema";
 
 test("accepts the complete bilingual default portfolio", () => {
@@ -67,4 +68,41 @@ test("accepts versioned local media but rejects protocol-relative paths", () => 
   remoteMedia.projects[0].preview.url =
     "https://example.supabase.co/storage/v1/object/public/media/florent/afterdark-loop.mp4";
   assert.doesNotThrow(() => parsePortfolioContent(remoteMedia));
+});
+
+test("adds complete legal defaults to a legacy version-one document", () => {
+  const legacy = structuredClone(content) as Record<string, unknown>;
+  delete legacy.legal;
+
+  const parsed = parsePortfolioContent(legacy);
+
+  assert.deepEqual(parsed.legal, defaultLegalContent);
+  assert.equal(parsed.schemaVersion, 1);
+});
+
+test("keeps JSON legal defaults aligned with the typed defaults", () => {
+  const parsed = parsePortfolioContent(content);
+  assert.deepEqual(parsed.legal, defaultLegalContent);
+});
+
+test("ships editable LinkedIn, Instagram and Vimeo defaults", () => {
+  const parsed = parsePortfolioContent(content);
+  assert.deepEqual(
+    parsed.site.socials.map(({ label, url }) => ({ label, url })),
+    [
+      { label: "LinkedIn", url: "https://www.linkedin.com/" },
+      { label: "Instagram", url: "https://www.instagram.com/" },
+      { label: "Vimeo", url: "https://vimeo.com/" },
+    ],
+  );
+});
+
+test("rejects unsafe legal host URLs and malformed update dates", () => {
+  const unsafeHost = structuredClone(content);
+  unsafeHost.legal.host.url = "http://example.com";
+  assert.throws(() => parsePortfolioContent(unsafeHost), /https/i);
+
+  const invalidDate = structuredClone(content);
+  invalidDate.legal.updatedAt = "28/07/2026";
+  assert.throws(() => parsePortfolioContent(invalidDate), /date|YYYY-MM-DD/i);
 });
