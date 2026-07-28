@@ -22,6 +22,8 @@
 - Remove scale transforms from project-card media and `.case-film`; retain unrelated navigation, ticker, badge, and decorative transforms.
 - Preserve the existing bilingual JSON schema and use `preview.fallbackGifUrl`; do not add a new content field.
 - Use the existing dependencies; do not add a GIF, animation, state-management, or theme package.
+- Use `https://florentrossi.fr` as the canonical production origin and redirect `https://www.florentrossi.fr` permanently to it.
+- Preserve all existing mail-related DNS records; only add or replace the web records explicitly requested by Vercel.
 
 ---
 
@@ -31,10 +33,12 @@
 
 - `lib/content/preview.ts` — pure selection and capability rules for project preview GIFs.
 - `lib/theme.ts` — theme types, storage key, pure resolution functions, DOM application helper, and pre-hydration script.
+- `lib/site-url.ts` — validated canonical site origin and localized canonical URL helpers.
 - `app/components/ThemeToggle.tsx` — localized client-side theme control.
 - `tests/preview.test.ts` — pure tests for GIF URL selection and motion eligibility.
 - `tests/project-card.test.ts` — integration-level source assertions for the poster/GIF card and zoom removal.
 - `tests/theme.test.ts` — theme resolution, bootstrap, integration, and palette contrast tests.
+- `tests/site-url.test.ts` — canonical production origin and localized alternate metadata tests.
 - `public/media/florent/*-preview.gif` — five deterministic generated preview files.
 
 ### Modified files
@@ -45,7 +49,11 @@
 - `app/components/ProjectCard.tsx` — remove `<video>` and touch playback; swap poster/GIF on eligible hover/focus.
 - `app/components/SiteHeader.tsx` — group language and theme controls.
 - `app/layout.tsx` — apply the theme before first paint.
+- `app/[locale]/page.tsx` — home canonical and FR/EN alternate metadata.
+- `app/[locale]/about/page.tsx` — about canonical and FR/EN alternate metadata.
+- `app/[locale]/work/[slug]/page.tsx` — project canonical and FR/EN alternate metadata.
 - `app/globals.css` — theme tokens, toggle styling, GIF state styling, admin isolation, contrast-safe accent text, and removal of media zoom.
+- `.env.example` — document the canonical production site URL.
 - `docs/client-editor-guide.md` — describe poster/GIF grid behavior and retained MP4 case-study usage.
 
 ---
@@ -1076,7 +1084,282 @@ git commit -m "feat: apply accessible light and dark palettes"
 
 ---
 
-### Task 6: Full Verification, Content Publication, and Production Deployment
+### Task 6: Canonical `florentrossi.fr` Metadata and Vercel Domain
+
+**Files:**
+- Create: `lib/site-url.ts`
+- Create: `tests/site-url.test.ts`
+- Modify: `app/layout.tsx`
+- Modify: `app/[locale]/page.tsx`
+- Modify: `app/[locale]/about/page.tsx`
+- Modify: `app/[locale]/work/[slug]/page.tsx`
+- Modify: `.env.example`
+- External state: Vercel project domains/environment and the domain’s web DNS records.
+
+**Interfaces:**
+- Produces: `PRODUCTION_SITE_URL`, `getSiteUrl(value?: string): URL`, and `localizedAlternates(locale: Locale, path?: string, value?: string): Metadata["alternates"]`.
+- The three localized route metadata functions consume `localizedAlternates`; root metadata consumes `getSiteUrl`.
+
+- [ ] **Step 1: Write failing canonical-origin tests**
+
+Create `tests/site-url.test.ts`:
+
+```ts
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import test from "node:test";
+import {
+  getSiteUrl,
+  localizedAlternates,
+  PRODUCTION_SITE_URL,
+} from "../lib/site-url";
+
+test("uses florentrossi.fr as the safe canonical production origin", () => {
+  assert.equal(PRODUCTION_SITE_URL, "https://florentrossi.fr");
+  assert.equal(getSiteUrl(undefined).href, "https://florentrossi.fr/");
+  assert.equal(
+    getSiteUrl("https://preview.example.com").href,
+    "https://preview.example.com/",
+  );
+  assert.equal(
+    getSiteUrl("javascript:alert(1)").href,
+    "https://florentrossi.fr/",
+  );
+  assert.equal(
+    getSiteUrl("https://user:pass@example.com").href,
+    "https://florentrossi.fr/",
+  );
+});
+
+test("builds exact FR and EN canonical alternates", () => {
+  const home = localizedAlternates("fr");
+  const project = localizedAlternates("en", "/work/afterdark");
+
+  assert.equal(home?.canonical?.toString(), "https://florentrossi.fr/fr");
+  assert.equal(
+    home?.languages?.fr.toString(),
+    "https://florentrossi.fr/fr",
+  );
+  assert.equal(
+    home?.languages?.en.toString(),
+    "https://florentrossi.fr/en",
+  );
+  assert.equal(
+    project?.canonical?.toString(),
+    "https://florentrossi.fr/en/work/afterdark",
+  );
+  assert.equal(
+    project?.languages?.fr.toString(),
+    "https://florentrossi.fr/fr/work/afterdark",
+  );
+});
+
+test("localized routes publish canonical and language metadata", async () => {
+  const sources = await Promise.all([
+    readFile("app/[locale]/page.tsx", "utf8"),
+    readFile("app/[locale]/about/page.tsx", "utf8"),
+    readFile("app/[locale]/work/[slug]/page.tsx", "utf8"),
+  ]);
+
+  assert.ok(sources.every((source) => source.includes("localizedAlternates")));
+  assert.match(await readFile("app/layout.tsx", "utf8"), /getSiteUrl/);
+  assert.match(
+    await readFile(".env.example", "utf8"),
+    /NEXT_PUBLIC_SITE_URL=https:\/\/florentrossi\.fr/,
+  );
+});
+```
+
+- [ ] **Step 2: Run the focused test and verify the missing module failure**
+
+Run:
+
+```powershell
+npx tsx --test tests/site-url.test.ts
+```
+
+Expected: FAIL with `Cannot find module '../lib/site-url'`.
+
+- [ ] **Step 3: Implement validated canonical URL helpers**
+
+Create `lib/site-url.ts`:
+
+```ts
+import type { Metadata } from "next";
+import type { Locale } from "../content/schema";
+
+export const PRODUCTION_SITE_URL = "https://florentrossi.fr";
+
+export function getSiteUrl(
+  value = process.env.NEXT_PUBLIC_SITE_URL,
+): URL {
+  try {
+    const url = new URL(value || PRODUCTION_SITE_URL);
+    const safeProtocol = url.protocol === "https:" || url.protocol === "http:";
+    const cleanOrigin =
+      !url.username &&
+      !url.password &&
+      url.pathname === "/" &&
+      !url.search &&
+      !url.hash;
+
+    return safeProtocol && cleanOrigin
+      ? url
+      : new URL(PRODUCTION_SITE_URL);
+  } catch {
+    return new URL(PRODUCTION_SITE_URL);
+  }
+}
+
+export function localizedAlternates(
+  locale: Locale,
+  path = "",
+  value?: string,
+): Metadata["alternates"] {
+  const base = getSiteUrl(value);
+  const suffix = path === "" || path.startsWith("/") ? path : `/${path}`;
+
+  return {
+    canonical: new URL(`/${locale}${suffix}`, base),
+    languages: {
+      fr: new URL(`/fr${suffix}`, base),
+      en: new URL(`/en${suffix}`, base),
+    },
+  };
+}
+```
+
+- [ ] **Step 4: Make root social metadata use the configured canonical origin**
+
+In `app/layout.tsx`, import:
+
+```ts
+import { getSiteUrl } from "../lib/site-url";
+```
+
+Inside `generateMetadata`, replace the forwarded-host/protocol construction with:
+
+```ts
+const baseUrl = getSiteUrl();
+```
+
+Keep `headers()` in `RootLayout` for document-language detection. Continue building `/og.png` from `baseUrl`.
+
+- [ ] **Step 5: Add localized alternates to all public route metadata**
+
+In `app/[locale]/page.tsx`, import:
+
+```ts
+import { localizedAlternates } from "../../lib/site-url";
+```
+
+In `app/[locale]/about/page.tsx`, import:
+
+```ts
+import { localizedAlternates } from "../../../lib/site-url";
+```
+
+In `app/[locale]/work/[slug]/page.tsx`, import:
+
+```ts
+import { localizedAlternates } from "../../../../lib/site-url";
+```
+
+Add these exact values to the metadata objects:
+
+Home:
+
+```ts
+alternates: localizedAlternates(fr ? "fr" : "en"),
+```
+
+About:
+
+```ts
+alternates: localizedAlternates(
+  locale === "fr" ? "fr" : "en",
+  "/about",
+),
+```
+
+Project:
+
+```ts
+alternates: localizedAlternates(locale, `/work/${project?.slug ?? slug}`),
+```
+
+Do not create canonical metadata for private `/admin` or `/admin/preview` routes.
+
+- [ ] **Step 6: Pin the production environment example and run tests**
+
+Change `.env.example` to:
+
+```dotenv
+NEXT_PUBLIC_SITE_URL=https://florentrossi.fr
+```
+
+Run:
+
+```powershell
+npx tsx --test tests/site-url.test.ts tests/personal-portfolio.test.ts tests/runtime-config.test.ts
+npm run typecheck
+```
+
+Expected: all tests PASS and TypeScript exits 0.
+
+- [ ] **Step 7: Commit canonical metadata**
+
+```powershell
+git add lib/site-url.ts tests/site-url.test.ts app/layout.tsx .env.example
+git add -- ':(literal)app/[locale]/page.tsx' ':(literal)app/[locale]/about/page.tsx' ':(literal)app/[locale]/work/[slug]/page.tsx'
+git commit -m "feat: make florentrossi.fr the canonical domain"
+```
+
+- [ ] **Step 8: Attach both domains to the linked Vercel project**
+
+Open the linked Vercel project `atelier-vif-portfolio` (`prj_m2SexdcFpsvIV1j8joO6lMiRgYmz`) and add:
+
+- `florentrossi.fr` as the primary production domain;
+- `www.florentrossi.fr` as a redirect to `https://florentrossi.fr`.
+
+Set the redirect as permanent. In the Vercel production environment, set:
+
+```dotenv
+NEXT_PUBLIC_SITE_URL=https://florentrossi.fr
+```
+
+Do not force-transfer either hostname if Vercel reports that it belongs to another account or project; stop and report the ownership verification record instead.
+
+- [ ] **Step 9: Apply only the web DNS records requested by Vercel**
+
+Inspect both domain cards after attachment. At the current DNS provider:
+
+- apply the exact apex A/ALIAS value displayed for `florentrossi.fr`;
+- apply the exact CNAME value displayed for `www.florentrossi.fr`;
+- remove only conflicting apex/web A, AAAA, ALIAS, or CNAME records identified by Vercel;
+- preserve every MX, SPF, DKIM, DMARC, verification TXT, and unrelated subdomain record.
+
+If the DNS provider is not available in the authenticated browser session, report the registrar/provider name and the two exact Vercel-requested record changes for the user to apply; do not guess values or alter nameservers.
+
+- [ ] **Step 10: Verify domain, TLS, redirect, and canonical tags**
+
+After Vercel reports both domains valid, run:
+
+```powershell
+curl.exe -I https://florentrossi.fr/fr
+curl.exe -I https://www.florentrossi.fr/fr
+```
+
+Expected:
+
+- apex response is HTTP 200 with a valid Vercel-managed TLS certificate;
+- `www` response is a permanent HTTP 301 or 308 redirect whose `Location` starts with `https://florentrossi.fr/`;
+- the HTML for `/fr`, `/en`, `/fr/about`, and `/fr/work/afterdark` contains a canonical link on `https://florentrossi.fr`;
+- no canonical link references `vercel.app` or `www.florentrossi.fr`.
+
+---
+
+### Task 7: Full Verification, Content Publication, and Production Deployment
 
 **Files:**
 - Verify: all modified source, tests, JSON, docs, and generated assets.
@@ -1186,22 +1469,24 @@ git log -7 --oneline
 git push origin main
 ```
 
-Expected: clean worktree and successful push. Wait for the GitHub-triggered Vercel deployment of `atelier-vif-portfolio.vercel.app` to become ready.
+Expected: clean worktree and successful push. Wait for the GitHub-triggered Vercel deployment on `florentrossi.fr` to become ready.
 
 - [ ] **Step 9: Verify production routes and assets**
 
 Check:
 
-- `https://atelier-vif-portfolio.vercel.app/fr`
-- `https://atelier-vif-portfolio.vercel.app/en`
-- `https://atelier-vif-portfolio.vercel.app/fr/about`
-- `https://atelier-vif-portfolio.vercel.app/fr/work/afterdark`
-- `https://atelier-vif-portfolio.vercel.app/media/florent/afterdark-preview.gif`
-- `https://atelier-vif-portfolio.vercel.app/media/florent/afterdark-loop.mp4`
+- `https://florentrossi.fr/fr`
+- `https://florentrossi.fr/en`
+- `https://florentrossi.fr/fr/about`
+- `https://florentrossi.fr/fr/work/afterdark`
+- `https://florentrossi.fr/media/florent/afterdark-preview.gif`
+- `https://florentrossi.fr/media/florent/afterdark-loop.mp4`
+- `https://www.florentrossi.fr/fr`
 
 Expected:
 
 - public pages and both media assets return HTTP 200;
+- `www.florentrossi.fr` permanently redirects to `florentrossi.fr`;
 - GIF response content type is `image/gif`;
 - MP4 response content type is `video/mp4`;
 - the production grid uses poster-to-GIF behavior, not MP4 autoplay;

@@ -112,6 +112,20 @@ Après génération des médias :
 
 Le client peut ensuite remplacer les posters, GIF, MP4 et vidéos complètes depuis les champs existants sans modification du code.
 
+## Domaine canonique
+
+Le domaine public principal devient `https://florentrossi.fr`. La variante
+`https://www.florentrossi.fr` est également rattachée au projet Vercel et
+redirige de façon permanente vers le domaine sans `www`.
+
+Le site utilise `florentrossi.fr` comme origine pour les métadonnées, les URL
+canoniques et les aperçus sociaux. Les routes FR et EN déclarent leurs
+alternatives localisées afin d’éviter le contenu dupliqué.
+
+La configuration DNS reprend uniquement les enregistrements indiqués par
+Vercel après rattachement du domaine. Les enregistrements MX, SPF, DKIM, DMARC
+et autres réglages e-mail existants ne sont ni supprimés ni remplacés.
+
 ## Accessibilité et robustesse
 
 - Le focus clavier déclenche le même aperçu que le survol.
@@ -146,7 +160,7 @@ Le client peut ensuite remplacer les posters, GIF, MP4 et vidéos complètes dep
 
 ## Livraison
 
-Les changements sont développés et validés localement, le contenu est synchronisé avec Supabase, puis la branche principale est publiée sur GitHub et déployée sur Vercel. Une vérification finale est effectuée sur les routes FR/EN, les études de cas, l’administration et les ressources GIF/MP4 de production.
+Les changements sont développés et validés localement, le contenu est synchronisé avec Supabase, puis la branche principale est publiée sur GitHub et déployée sur Vercel. Le domaine `florentrossi.fr` est rattaché au déploiement avec HTTPS actif et redirection de `www`. Une vérification finale est effectuée sur les routes FR/EN, les études de cas, l’administration et les ressources GIF/MP4 de production.
 
 ## Critères d’acceptation
 
@@ -159,4 +173,6 @@ La fonctionnalité est terminée lorsque :
 - les deux langues disposent de libellés accessibles ;
 - aucun média ne zoome au survol ;
 - l’administration permet toujours de remplacer les médias ;
+- `florentrossi.fr` sert le portfolio en HTTPS et `www.florentrossi.fr` redirige vers lui ;
+- les métadonnées canoniques utilisent uniquement `https://florentrossi.fr` ;
 - tous les contrôles automatisés et visuels passent avant le déploiement.
