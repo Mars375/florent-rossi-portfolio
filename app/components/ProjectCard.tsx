@@ -46,7 +46,6 @@ export function ProjectCard({
       }
     };
 
-    setGifFailed(false);
     update();
     hover.addEventListener("change", update);
     pointer.addEventListener("change", update);

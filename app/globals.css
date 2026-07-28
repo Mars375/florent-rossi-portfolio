@@ -1,14 +1,32 @@
 @import "tailwindcss";
 
-:root {
+:root,
+:root[data-theme="light"] {
   --paper: #f2ebdd;
   --ink: #151515;
   --coral: #ff5b35;
+  --coral-text: #b13a20;
   --acid: #dfff45;
+  --accent-ink: #151515;
   --muted: #746f65;
+  --muted-text: #6d675e;
   --line: rgba(21, 21, 21, 0.32);
   --serif: "Newsreader", "Iowan Old Style", "Baskerville", Georgia, serif;
   --sans: "Space Grotesk", "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --paper: #11110f;
+  --ink: #f2ebdd;
+  --coral: #ff6a45;
+  --coral-text: #ff6a45;
+  --acid: #dfff45;
+  --accent-ink: #151515;
+  --muted: #b8b0a4;
+  --muted-text: #b8b0a4;
+  --line: rgba(242, 235, 221, 0.30);
+  color-scheme: dark;
 }
 
 * {
@@ -110,7 +128,38 @@ a:focus-visible {
 }
 
 .locale-switch [aria-current="page"] {
-  color: var(--coral);
+  color: var(--coral-text);
+}
+
+.header-actions {
+  display: flex;
+  justify-self: end;
+  gap: 14px;
+  align-items: center;
+}
+
+.theme-toggle {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.theme-toggle span {
+  font-size: 16px;
+  line-height: 1;
 }
 
 .hero {
@@ -130,7 +179,7 @@ a:focus-visible {
   padding: 20px;
   border-radius: 50%;
   background: var(--coral);
-  color: var(--paper);
+  color: var(--accent-ink);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -155,7 +204,7 @@ a:focus-visible {
 
 .hero h1 span:last-child {
   margin-left: 10vw;
-  color: var(--coral);
+  color: var(--coral-text);
 }
 
 .hero > p {
@@ -271,7 +320,7 @@ a:focus-visible {
   right: 14px;
   padding: 7px 10px;
   background: var(--acid);
-  color: var(--ink);
+  color: var(--accent-ink);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.09em;
@@ -311,6 +360,7 @@ a:focus-visible {
   padding: 20px 0 17px;
   border-block: 1px solid var(--ink);
   background: var(--acid);
+  color: var(--accent-ink);
   font-size: clamp(18px, 2vw, 32px);
   font-weight: 800;
   letter-spacing: 0.05em;
@@ -380,7 +430,7 @@ a:focus-visible {
   display: inline-block;
   padding: 14px 16px 11px;
   background: var(--coral);
-  color: var(--paper);
+  color: var(--accent-ink);
   font-size: clamp(18px, 2vw, 32px);
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -453,7 +503,7 @@ a:focus-visible {
   bottom: 32px;
   padding: 13px 15px 10px;
   background: var(--coral);
-  color: var(--paper);
+  color: var(--accent-ink);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -481,7 +531,7 @@ a:focus-visible {
 .idea-section {
   padding: 120px max(24px, calc((100vw - 1540px) / 2));
   background: var(--coral);
-  color: var(--paper);
+  color: var(--accent-ink);
 }
 
 .idea-section h2 {
@@ -559,7 +609,7 @@ figcaption {
 }
 
 .credits dt {
-  color: var(--muted);
+  color: var(--muted-text);
   text-transform: uppercase;
 }
 
@@ -697,6 +747,7 @@ figcaption {
 .process article:last-child {
   border-right: 1px solid var(--ink);
   background: var(--acid);
+  color: var(--accent-ink);
 }
 
 .process h2 {
@@ -979,6 +1030,21 @@ figcaption {
 }
 
 /* Administration */
+.admin-shell,
+.admin-login,
+.admin-forbidden {
+  --paper: #f2ebdd;
+  --ink: #151515;
+  --coral: #ff5b35;
+  --coral-text: #b13a20;
+  --acid: #dfff45;
+  --accent-ink: #151515;
+  --muted: #746f65;
+  --muted-text: #6d675e;
+  --line: rgba(21, 21, 21, 0.32);
+  color-scheme: light;
+}
+
 .admin-login,
 .admin-forbidden {
   min-height: 100svh;
@@ -1052,6 +1118,8 @@ figcaption {
 .admin-shell {
   min-height: 100svh;
   background: #f6f2e9;
+  color: var(--ink);
+  color-scheme: light;
 }
 
 .admin-header {
@@ -1288,7 +1356,7 @@ figcaption {
 }
 
 .admin-localized-field label > span {
-  color: var(--coral);
+  color: var(--coral-text);
 }
 
 .admin-project-layout {
@@ -1325,12 +1393,12 @@ figcaption {
 
 .admin-project-list button span {
   grid-row: span 2;
-  color: var(--muted);
+  color: var(--muted-text);
   font-size: 11px;
 }
 
 .admin-project-list button small {
-  color: var(--muted);
+  color: var(--muted-text);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -1402,7 +1470,7 @@ figcaption {
 }
 
 .media-uploader small {
-  color: var(--muted);
+  color: var(--muted-text);
   font-size: 11px;
 }
 
@@ -1542,7 +1610,7 @@ figcaption {
   height: 35px;
   padding: 9px 20px;
   background: var(--acid);
-  color: var(--ink);
+  color: var(--accent-ink);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.04em;
