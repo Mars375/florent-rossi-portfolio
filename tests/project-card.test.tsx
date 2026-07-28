@@ -1,15 +1,13 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { Window } from "happy-dom";
+import { act } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import postcss from "postcss";
 import content from "../content/default.json";
 import { parsePortfolioContent } from "../content/schema";
-import {
-  ProjectCard,
-  shouldActivateProjectCardFocus,
-  shouldShowProjectCardGif,
-} from "../app/components/ProjectCard";
+import { ProjectCard } from "../app/components/ProjectCard";
 
 const project = parsePortfolioContent(content).projects[0];
 
@@ -30,27 +28,139 @@ test("renders only the static poster before an eligible interaction", () => {
   assert.match(markup, /En lecture 00:03/);
 });
 
-test("keeps a touch-origin focus static while allowing keyboard focus", () => {
-  assert.equal(shouldActivateProjectCardFocus("pointer"), false);
-  assert.equal(shouldActivateProjectCardFocus("keyboard"), true);
+async function renderInteractiveProjectCard(projectToRender = project) {
+  const window = new Window({ url: "http://localhost" });
+  const globalValues = {
+    window,
+    self: window,
+    document: window.document,
+    navigator: window.navigator,
+    location: window.location,
+    HTMLElement: window.HTMLElement,
+    HTMLMediaElement: window.HTMLMediaElement,
+    IS_REACT_ACT_ENVIRONMENT: true,
+  };
+  const previousGlobals = Object.fromEntries(
+    Object.keys(globalValues).map((key) => [
+      key,
+      Object.getOwnPropertyDescriptor(globalThis, key),
+    ]),
+  );
+
+  for (const [key, value] of Object.entries(globalValues)) {
+    Object.defineProperty(globalThis, key, {
+      configurable: true,
+      value,
+      writable: true,
+    });
+  }
+  window.matchMedia = (() =>
+    ({
+      matches: false,
+      addEventListener() {},
+      removeEventListener() {},
+    })) as unknown as typeof window.matchMedia;
+  window.HTMLMediaElement.prototype.play = () => Promise.resolve();
+  window.HTMLMediaElement.prototype.pause = () => {};
+
+  const container = window.document.createElement("div");
+  window.document.body.append(container);
+  const { createRoot } = await import("react-dom/client");
+  const root = createRoot(container as unknown as Element);
+
+  await act(async () => {
+    root.render(
+      <ProjectCard
+        project={projectToRender}
+        locale="fr"
+        playingLabel="En lecture"
+        viewLabel="Voir le projet"
+      />,
+    );
+  });
+
+  return {
+    container,
+    window,
+    async cleanup() {
+      await act(async () => {
+        root.unmount();
+      });
+      for (const [key, descriptor] of Object.entries(previousGlobals)) {
+        if (descriptor) {
+          Object.defineProperty(globalThis, key, descriptor);
+        } else {
+          Reflect.deleteProperty(globalThis, key);
+        }
+      }
+      window.close();
+    },
+  };
+}
+
+async function focusWithKeyboard(
+  rendered: Awaited<ReturnType<typeof renderInteractiveProjectCard>>,
+) {
+  await act(async () => {
+    rendered.window.dispatchEvent(
+      new rendered.window.KeyboardEvent("keydown", { key: "Tab" }),
+    );
+    (
+      rendered.container.querySelector(
+        ".project-media-link",
+      ) as unknown as HTMLAnchorElement
+    ).focus();
+  });
+}
+
+test("a touch pointerdown stops a preview already activated by keyboard focus", async () => {
+  const rendered = await renderInteractiveProjectCard();
+
+  try {
+    assert.equal(rendered.container.querySelector("video"), null);
+    await focusWithKeyboard(rendered);
+    assert.equal(
+      rendered.container.querySelector("video")?.classList.contains("is-visible"),
+      true,
+    );
+
+    await act(async () => {
+      const pointerDown = new rendered.window.Event("pointerdown");
+      Object.defineProperty(pointerDown, "pointerType", { value: "touch" });
+      rendered.window.dispatchEvent(pointerDown);
+    });
+
+    assert.equal(
+      rendered.container.querySelector("video")?.classList.contains("is-visible"),
+      false,
+    );
+  } finally {
+    await rendered.cleanup();
+  }
 });
 
-test("shows a directly configured GIF during an active preview", () => {
+test("renders a directly configured GIF through the active project card", async () => {
   const directGif = structuredClone(project);
   directGif.preview.type = "gif";
   directGif.preview.url = "/media/florent/direct-preview.gif";
   directGif.preview.fallbackGifUrl = "";
 
-  assert.equal(
-    shouldShowProjectCardGif({
-      previewActive: true,
-      videoUrl: "",
-      gifUrl: directGif.preview.url,
-      videoFailed: false,
-      gifFailed: false,
-    }),
-    true,
-  );
+  const rendered = await renderInteractiveProjectCard(directGif);
+
+  try {
+    assert.equal(rendered.container.querySelector("video"), null);
+    assert.equal(rendered.container.querySelector(".project-preview-fallback"), null);
+
+    await focusWithKeyboard(rendered);
+
+    assert.equal(rendered.container.querySelector("video"), null);
+    assert.equal(
+      rendered.container.querySelector(".project-preview-fallback")?.getAttribute("src"),
+      "/media/florent/direct-preview.gif",
+    );
+  } finally {
+    await rendered.cleanup();
+  }
 });
 
 test("card and case-study media styles never scale media on hover", async () => {

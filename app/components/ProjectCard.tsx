@@ -8,34 +8,7 @@ import {
   projectPreviewSources,
 } from "../../lib/content/preview";
 
-export type ProjectCardInputModality = "keyboard" | "pointer" | null;
-
-export function shouldActivateProjectCardFocus(
-  lastInput: ProjectCardInputModality,
-): boolean {
-  return lastInput === "keyboard";
-}
-
-export function shouldShowProjectCardGif({
-  previewActive,
-  videoUrl,
-  gifUrl,
-  videoFailed,
-  gifFailed,
-}: {
-  previewActive: boolean;
-  videoUrl: string;
-  gifUrl: string;
-  videoFailed: boolean;
-  gifFailed: boolean;
-}): boolean {
-  return (
-    previewActive &&
-    Boolean(gifUrl) &&
-    !gifFailed &&
-    (!videoUrl || videoFailed)
-  );
-}
+type ProjectCardInputModality = "keyboard" | "pointer" | null;
 
 export function ProjectCard({
   project,
@@ -77,6 +50,7 @@ export function ProjectCard({
   useEffect(() => {
     const recordPointerInput = () => {
       lastInputRef.current = "pointer";
+      setFocused(false);
     };
     const recordKeyboardInput = () => {
       lastInputRef.current = "keyboard";
@@ -121,13 +95,11 @@ export function ProjectCard({
     });
   const previewActive = mousePreviewActive || focusPreviewActive;
   const showVideo = previewActive && Boolean(videoUrl) && !videoFailed;
-  const showGif = shouldShowProjectCardGif({
-    previewActive,
-    videoUrl,
-    gifUrl,
-    videoFailed,
-    gifFailed,
-  });
+  const showGif =
+    previewActive &&
+    Boolean(gifUrl) &&
+    !gifFailed &&
+    (!videoUrl || videoFailed);
   const previewShowing = showVideo || showGif;
 
   useEffect(() => {
@@ -168,7 +140,7 @@ export function ProjectCard({
           className="project-media-link focus-ring"
           href={projectHref}
           onFocus={() => {
-            if (shouldActivateProjectCardFocus(lastInputRef.current)) {
+            if (lastInputRef.current === "keyboard") {
               activate("focus");
               setFocused(true);
             }
