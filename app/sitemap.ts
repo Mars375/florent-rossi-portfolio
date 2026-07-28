@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { getPublishedContent } from "../lib/content/repository";
 import { PRODUCTION_SITE_URL } from "../lib/site-url";
 
+export const dynamic = "force-dynamic";
+
 const staticPaths = ["", "/about", "/legal", "/privacy"];
 const locales = ["fr", "en"] as const;
 

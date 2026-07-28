@@ -351,3 +351,27 @@ Le contrôle navigateur/console et la confirmation du comportement live restent
 - Les médianes Lighthouse existantes sont : accueil mobile/desktop A11y
   100/100; étude mobile/desktop 96/96, ce dernier résultat correspondant au
   défaut de contraste décrit ci-dessus.
+
+### Revue Tâche 5 — indexation admin et fraîcheur du sitemap
+
+La revue indépendante de `e0bc1b6` a relevé que `Disallow: /admin/` ne couvre
+pas l'URL distincte `/admin`, et que le sitemap statique de build dépendait de
+l'invalidation de layout sans test dédié.
+
+- **Correction admin :** la règle robots émet désormais les deux préfixes
+  `/admin` et `/admin/`. Les métadonnées des écrans login et protected
+  définissent aussi `robots: { index: false, follow: false }` : `/admin` et
+  `/admin/preview/fr` héritent du layout protégé, tandis que `/admin/login`
+  les possède directement. Cela ajoute une défense pour les URL découvertes
+  indépendamment de `robots.txt`.
+- **Correction fraîcheur sitemap :** `app/sitemap.ts` exporte
+  `dynamic = "force-dynamic"`. Il lit donc `getPublishedContent()` à chaque
+  requête de sitemap au lieu de conserver un snapshot de build ; les projets
+  apparaissent ou disparaissent immédiatement selon leur statut `published`,
+  dans les deux locales. Le compromis est une lecture de contenu par requête
+  de sitemap, acceptable pour ce petit inventaire et plus robuste qu'une
+  invalidation implicite.
+- **Validation :** les tests couvrent explicitement `/admin`, `/admin/login`
+  et `/admin/preview/fr`, la double règle robots et la propriété dynamique;
+  le build affiche maintenant `/sitemap.xml` en route dynamique (`ƒ`). La
+  vérification HTTP de production attend toujours le déploiement autorisé.
