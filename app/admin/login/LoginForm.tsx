@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { isAdminEmail } from "../../../lib/auth";
-import { adminAuthCallbackUrl } from "../../../lib/site-url";
-import { createBrowserSupabaseClient } from "../../../lib/supabase/browser";
+import { requestAdminMagicLinkAction } from "./actions";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -15,24 +13,8 @@ export function LoginForm() {
     event.preventDefault();
     setStatus("sending");
 
-    if (!isAdminEmail(email)) {
-      setStatus("sent");
-      return;
-    }
-
     try {
-      const supabase = createBrowserSupabaseClient();
-      const redirectTo = adminAuthCallbackUrl();
-      const { error } = await supabase.auth.signInWithOtp({
-        email: email.trim(),
-        options: {
-          emailRedirectTo: redirectTo,
-          shouldCreateUser: true,
-        },
-      });
-
-      if (error) throw error;
-      setStatus("sent");
+      setStatus((await requestAdminMagicLinkAction(email)) ? "sent" : "error");
     } catch {
       setStatus("error");
     }

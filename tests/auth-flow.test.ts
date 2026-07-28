@@ -23,8 +23,12 @@ test("accepts both PKCE codes and token-hash email templates", async () => {
   assert.match(source, /verifyOtp/);
 });
 
-test("login uses the canonical callback helper rather than the browser origin", async () => {
-  const source = await readFile("app/admin/login/LoginForm.tsx", "utf8");
-  assert.match(source, /adminAuthCallbackUrl\(\)/);
-  assert.doesNotMatch(source, /window\.location\.origin/);
+test("login keeps the canonical callback helper in its server action", async () => {
+  const [clientSource, actionSource] = await Promise.all([
+    readFile("app/admin/login/LoginForm.tsx", "utf8"),
+    readFile("app/admin/login/actions.ts", "utf8"),
+  ]);
+  assert.match(clientSource, /requestAdminMagicLinkAction/);
+  assert.doesNotMatch(clientSource, /window\.location\.origin/);
+  assert.match(actionSource, /adminAuthCallbackUrl\(\)/);
 });
