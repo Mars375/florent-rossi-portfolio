@@ -76,11 +76,31 @@ test("allows an explicitly configured localhost callback in development", () => 
 });
 
 test("pins non-development admin authentication to florentrossi.com", () => {
-  for (const environment of ["test", "staging", undefined]) {
+  for (const environment of ["test", "staging"]) {
     assert.equal(
       adminAuthCallbackUrl("http://localhost:3000", environment),
       "https://florentrossi.com/auth/confirm?next=/admin",
     );
+  }
+});
+
+test("falls back to the canonical callback without NODE_ENV", () => {
+  const environment = process.env as Record<string, string | undefined>;
+  const previous = environment.NODE_ENV;
+
+  try {
+    delete environment.NODE_ENV;
+
+    assert.equal(
+      adminAuthCallbackUrl("http://localhost:3000"),
+      "https://florentrossi.com/auth/confirm?next=/admin",
+    );
+  } finally {
+    if (previous === undefined) {
+      delete environment.NODE_ENV;
+    } else {
+      environment.NODE_ENV = previous;
+    }
   }
 });
 
