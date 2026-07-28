@@ -217,3 +217,53 @@ Le connecteur Supabase est présent. Ses sept appels strictement read-only (tabl
 - Tests ciblés : 15 passés, 0 échec.
 - `git diff --check 393e005..HEAD` : succès après correction de ce lot.
 - Aucun défaut P0/P1/P2 confirmé par les preuves locales et HTTP disponibles; la vérification Supabase distante reste ouverte uniquement pour le motif OAuth indiqué ci-dessus.
+
+## Performance et livraison des médias — Tâche 4
+
+Référence auditée : `d7eac6b8cdd4a4ba16dff2a2d802b2684759c0fe`. Les relevés Lighthouse et les réponses HTTP sont effectués contre la production sans mutation. Les JSON bruts restent exclusivement dans `C:\tmp\florent-rossi-audit` et ne sont pas versionnés.
+
+### Inventaire et budgets locaux
+
+`public/media/florent` contient 16 fichiers, pour **8 442 442 octets** au total. Tous respectent les budgets du guide : affiches `< 500 KB`, GIF `≤ 2 MB`, boucles MP4 `< 4 MB` et limite d’upload `< 25 MB`.
+
+| Catégorie | Plus gros fichier | Taille | Budget | État |
+| --- | --- | ---: | ---: | --- |
+| Poster JPG | `orbital-radio-poster.jpg` | 93 629 o | < 500 KB | PASS |
+| GIF preview | `orbital-radio-preview.gif` | 1 239 592 o | ≤ 2 MB | PASS |
+| MP4 loop | `orbital-radio-loop.mp4` | 1 195 722 o | < 4 MB | PASS |
+
+### En-têtes de production
+
+Le 28-07-2026, les `HEAD` de `afterdark-poster.jpg`, `afterdark-preview.gif` et `afterdark-loop.mp4` répondent tous `200`, avec respectivement `image/jpeg`/`38 602`, `image/gif`/`1 007 987` et `video/mp4`/`571 111` octets. Chacun expose un ETag (`50b122…`, `8df239…`, `f2b3e7…`) et `Accept-Ranges: bytes`, y compris le MP4 : PASS pour la reprise de flux vidéo.
+
+### P2 — Médias statiques revalidés à chaque consultation
+
+- **Preuve reproductible :** les trois réponses de production ont `Cache-Control: public, max-age=0, must-revalidate`, sans cache immuable. Les chemins contrôlés sont les assets locaux sous `/media/florent/*`.
+- **Impact :** les affiches et aperçus renouvellent une requête de validation au lieu d’être servis directement depuis le cache navigateur, ce qui dégrade les visites répétées et les réseaux à latence élevée.
+- **Cause racine :** `next.config.ts` ne définissait aucune règle `headers()` pour ces fichiers ; Vercel applique donc sa politique révalidante par défaut.
+- **Test rouge :** `caches versioned portfolio media immutably at the edge` dans `tests/runtime-config.test.ts` échouait car la règle `/media/florent/:path*` et sa valeur `Cache-Control` étaient absentes.
+- **Correction minimale :** la configuration Next renvoie désormais `Cache-Control: public, max-age=31536000, immutable` uniquement pour `/media/florent/:path*`.
+- **Validation :** le même test passe après correction et le build de production compile. La production non déployée conserve volontairement l’ancien header jusqu’à l’intégration autorisée ; le `HEAD` live post-déploiement reste à effectuer.
+
+### Lighthouse — médianes de trois exécutions
+
+Chrome local a été trouvé à `C:\Program Files\Google\Chrome\Application\chrome.exe`. Lighthouse **13.4.1** a exécuté trois mesures de `/fr` et `/fr/work/afterdark` pour mobile et desktop, catégories performance/accessibility/best-practices/SEO. La syntaxe initiale du brief (`--form-factor=desktop`) est rejetée par Lighthouse 13.4.1 car elle laisse l’émulation mobile active ; les trois mesures desktop ont donc utilisé `--preset=desktop`. Les 12 rapports sont présents, et `summarize-lighthouse.mjs` ne lit que les JSON de `C:\tmp\florent-rossi-audit`.
+
+| URL / stratégie | Perf / A11y / BP / SEO | FCP | LCP | TBT | CLS | Speed Index | Transféré |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Accueil mobile | 97 / 100 / 96 / 100 | 955.677 ms | 1 663.265 ms | 119 ms | 0 | 1 594.863 ms | 412 483 o |
+| Accueil desktop | 100 / 100 / 96 / 100 | 292.320 ms | 498.320 ms | 15 ms | 0 | 619.356 ms | 413 666 o |
+| Étude mobile | 97 / 96 / 96 / 100 | 1 008.283 ms | 2 481.673 ms | 117.5 ms | 0 | 1 495.385 ms | 509 389 o |
+| Étude desktop | 100 / 96 / 96 / 100 | 288.644 ms | 556.644 ms | 17.5 ms | 0 | 600.548 ms | 510 535 o |
+
+Les quatre LCP restent sous 2,5 s, les TBT sous 200 ms, les CLS à 0 et les scores performance au moins égaux à 90 : aucun P2 de Core Web Vitals n’est confirmé par ce laboratoire. Les scores Best Practices (96) et accessibilité des études (96) ne constituent pas un défaut de performance ; ils restent traçables dans les JSON temporaires.
+
+### Aperçus différés — périmètre de preuve
+
+Le contrôle Browser live (DOM avant/après hover, réutilisation de l’élément, viewport tactile) est **NOT TESTABLE** : le Browser Codex ESM ne peut pas créer l’onglet dans cet environnement. Ce n’est pas présenté comme preuve live. La preuve locale exécutable est `tests/project-card.test.tsx` : 9/9 passent, dont le poster seul avant interaction, la création puis réutilisation du même `<video>` au second survol, et l’absence de GIF/vidéo avec `prefers-reduced-motion`. Le code source confirme `preload="none"`, l’activation au pointeur souris ou focus clavier, et l’arrêt tactile d’un aperçu actif. Aucun comportement contradictoire n’est constaté par la preuve disponible.
+
+### Gates Tâche 4
+
+- Rouge observé : `node node_modules/tsx/dist/cli.mjs --test tests/runtime-config.test.ts` — 3/4 passés, 1 échec attendu avant correction.
+- Tests après correction : `runtime-config` 4/4 et `project-card` 9/9 passés ; TypeScript, ESLint ciblé et `next build` passés.
+- Suite complète : 112 passés, 0 échec (235,951 s) ; ESLint, TypeScript, `next build` et `git diff --check` réussis.
