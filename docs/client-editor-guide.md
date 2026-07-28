@@ -87,3 +87,22 @@ Attendez l’indication « Brouillon enregistré », ouvrez les deux aperçus, p
 cliquez sur « Publier le portfolio ». Après confirmation, la version publique
 est remplacée en une seule opération : les visiteurs ne voient jamais un
 contenu à moitié mis à jour.
+
+## Réseaux sociaux
+
+Dans **Site → Réseaux**, remplacez les URL génériques de LinkedIn, Instagram et
+Vimeo par les profils définitifs. Vous pouvez ajouter ou retirer un réseau.
+Toutes les URL doivent commencer par `https://`.
+
+## Mentions légales et confidentialité
+
+L’onglet **Légal** contrôle les pages françaises et anglaises, l’hébergeur et la
+date de mise à jour. Le texte fourni correspond à un portfolio personnel non
+marchand. Faites réviser ces pages si Florent commence à vendre des prestations,
+crée une entreprise, ajoute un formulaire, des statistiques d’audience, de la
+publicité ou un nouvel outil tiers.
+
+## Vidéos Vimeo et YouTube
+
+Une vidéo externe reste derrière son affiche jusqu’au clic du visiteur sur
+« Charger la vidéo ». Une vidéo MP4 directe reste disponible immédiatement.
