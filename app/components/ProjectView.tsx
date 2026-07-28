@@ -4,6 +4,7 @@ import type {
   PortfolioContent,
   Project,
 } from "../../content/schema";
+import { caseStudyGallery } from "../../lib/content/case-study-media";
 import { FooterLinks } from "./FooterLinks";
 import { SiteHeader } from "./SiteHeader";
 import { VideoEmbed } from "./VideoEmbed";
@@ -27,6 +28,7 @@ export function ProjectView({
   const story = project.story[locale];
   const number = String(project.order).padStart(2, "0");
   const homeHref = `${routeBase}/${locale}`;
+  const gallery = caseStudyGallery(project);
 
   return (
     <main>
@@ -65,9 +67,9 @@ export function ProjectView({
           <h2>{story.idea}</h2>
         </section>
 
-        {project.gallery.length > 0 ? (
+        {gallery.length > 0 ? (
           <section className="visual-sequence shell">
-            {project.gallery.map((media, index) => (
+            {gallery.map((media, index) => (
               <figure
                 className={index === 0 ? "visual-large" : undefined}
                 key={`${media.url}-${index}`}

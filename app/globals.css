@@ -622,7 +622,7 @@ a:focus-visible {
   grid-column: 1 / -1;
 }
 
-.visual-sequence figure:last-child {
+.visual-sequence figure:last-child:not(:first-child) {
   grid-column: 7 / span 6;
   margin-top: 120px;
 }
@@ -1008,7 +1008,7 @@ figcaption {
   }
 
   .visual-sequence figure,
-  .visual-sequence figure:last-child {
+  .visual-sequence figure:last-child:not(:first-child) {
     margin: 0 0 58px;
   }
 
