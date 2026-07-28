@@ -3,6 +3,8 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { generateMetadata as generateHomeMetadata } from "../app/[locale]/page";
 import { generateMetadata as generateAboutMetadata } from "../app/[locale]/about/page";
+import { generateMetadata as generateLegalMetadata } from "../app/[locale]/legal/page";
+import { generateMetadata as generatePrivacyMetadata } from "../app/[locale]/privacy/page";
 import { generateMetadata as generateWorkMetadata } from "../app/[locale]/work/[slug]/page";
 import {
   getSiteUrl,
@@ -15,20 +17,20 @@ function href(value: unknown): string {
   return value instanceof URL ? value.href : String(value);
 }
 
-test("uses florentrossi.fr as the safe canonical production origin", () => {
-  assert.equal(PRODUCTION_SITE_URL, "https://florentrossi.fr");
-  assert.equal(getSiteUrl("").href, "https://florentrossi.fr/");
+test("uses florentrossi.com as the safe canonical production origin", () => {
+  assert.equal(PRODUCTION_SITE_URL, "https://florentrossi.com");
+  assert.equal(getSiteUrl("").href, "https://florentrossi.com/");
   assert.equal(
     getSiteUrl("https://preview.example.com").href,
     "https://preview.example.com/",
   );
   assert.equal(
     getSiteUrl("javascript:alert(1)").href,
-    "https://florentrossi.fr/",
+    "https://florentrossi.com/",
   );
   assert.equal(
     getSiteUrl("https://user:pass@example.com").href,
-    "https://florentrossi.fr/",
+    "https://florentrossi.com/",
   );
 });
 
@@ -36,22 +38,22 @@ test("builds exact FR and EN canonical alternates", () => {
   const home = localizedAlternates("fr", "", "");
   const project = localizedAlternates("en", "/work/afterdark", "");
 
-  assert.equal(href(home?.canonical), "https://florentrossi.fr/fr");
-  assert.equal(href(home?.languages?.fr), "https://florentrossi.fr/fr");
-  assert.equal(href(home?.languages?.en), "https://florentrossi.fr/en");
+  assert.equal(href(home?.canonical), "https://florentrossi.com/fr");
+  assert.equal(href(home?.languages?.fr), "https://florentrossi.com/fr");
+  assert.equal(href(home?.languages?.en), "https://florentrossi.com/en");
   assert.equal(
     href(project?.canonical),
-    "https://florentrossi.fr/en/work/afterdark",
+    "https://florentrossi.com/en/work/afterdark",
   );
   assert.equal(
     href(project?.languages?.fr),
-    "https://florentrossi.fr/fr/work/afterdark",
+    "https://florentrossi.com/fr/work/afterdark",
   );
 });
 
-test("public metadata exposes canonical localized routes on florentrossi.fr", async () => {
+test("public metadata exposes canonical localized routes on florentrossi.com", async () => {
   const previous = process.env.NEXT_PUBLIC_SITE_URL;
-  process.env.NEXT_PUBLIC_SITE_URL = "https://florentrossi.fr";
+  process.env.NEXT_PUBLIC_SITE_URL = "https://florentrossi.com";
 
   try {
     const [home, about, work] = await Promise.all([
@@ -62,14 +64,14 @@ test("public metadata exposes canonical localized routes on florentrossi.fr", as
       }),
     ]);
 
-    assert.equal(href(home.alternates?.canonical), "https://florentrossi.fr/fr");
+    assert.equal(href(home.alternates?.canonical), "https://florentrossi.com/fr");
     assert.equal(
       href(about.alternates?.canonical),
-      "https://florentrossi.fr/en/about",
+      "https://florentrossi.com/en/about",
     );
     assert.equal(
       href(work.alternates?.canonical),
-      "https://florentrossi.fr/fr/work/afterdark",
+      "https://florentrossi.com/fr/work/afterdark",
     );
   } finally {
     if (previous === undefined) {
@@ -91,5 +93,29 @@ test("documents the canonical production origin in the environment example", asy
       }),
   );
 
-  assert.equal(values.NEXT_PUBLIC_SITE_URL, "https://florentrossi.fr");
+  assert.equal(values.NEXT_PUBLIC_SITE_URL, "https://florentrossi.com");
+});
+
+test("legal routes publish exact localized canonical alternates", async () => {
+  const [legal, privacy] = await Promise.all([
+    generateLegalMetadata({ params: Promise.resolve({ locale: "fr" }) }),
+    generatePrivacyMetadata({ params: Promise.resolve({ locale: "en" }) }),
+  ]);
+
+  assert.equal(
+    href(legal.alternates?.canonical),
+    "https://florentrossi.com/fr/legal",
+  );
+  assert.equal(
+    href(legal.alternates?.languages?.en),
+    "https://florentrossi.com/en/legal",
+  );
+  assert.equal(
+    href(privacy.alternates?.canonical),
+    "https://florentrossi.com/en/privacy",
+  );
+  assert.equal(
+    href(privacy.alternates?.languages?.fr),
+    "https://florentrossi.com/fr/privacy",
+  );
 });

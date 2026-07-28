@@ -1654,6 +1654,68 @@ figcaption {
   text-transform: uppercase;
 }
 
+.legal-page {
+  padding: clamp(70px, 9vw, 150px) 0 40px;
+}
+
+.legal-page header {
+  max-width: 1180px;
+}
+
+.legal-page h1 {
+  margin: 32px 0;
+  font-family: var(--serif);
+  font-size: clamp(76px, 13vw, 190px);
+  font-weight: 500;
+  letter-spacing: -0.07em;
+  line-height: 0.82;
+}
+
+.legal-page header > p:last-child {
+  max-width: 760px;
+  font-size: clamp(20px, 2.4vw, 34px);
+}
+
+.legal-sections {
+  max-width: 980px;
+  margin: clamp(90px, 12vw, 180px) 0 0 auto;
+}
+
+.legal-sections section {
+  display: grid;
+  grid-template-columns: 70px minmax(180px, 0.8fr) minmax(0, 1.7fr);
+  gap: 24px;
+  padding: 30px 0;
+  border-top: 1px solid var(--line);
+}
+
+.legal-sections h2,
+.legal-sections p {
+  margin: 0;
+}
+
+.legal-sections h2 {
+  font-family: var(--serif);
+  font-size: clamp(28px, 3vw, 46px);
+}
+
+.legal-sections p {
+  white-space: pre-line;
+}
+
+.legal-sections a {
+  grid-column: 3;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.legal-updated {
+  margin-top: 70px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 @media (max-width: 700px) {
   .admin-header {
     grid-template-columns: 1fr auto;
@@ -1708,5 +1770,16 @@ figcaption {
 
   .admin-publish-bar button {
     width: 100%;
+  }
+}
+
+@media (max-width: 850px) {
+  .legal-sections section {
+    grid-template-columns: 36px 1fr;
+  }
+
+  .legal-sections section > p:not(.section-label),
+  .legal-sections section > a {
+    grid-column: 2;
   }
 }

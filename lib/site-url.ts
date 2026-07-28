@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { Locale } from "../content/schema";
 
-export const PRODUCTION_SITE_URL = "https://florentrossi.fr";
+export const PRODUCTION_SITE_URL = "https://florentrossi.com";
 
 export function getSiteUrl(
   value = process.env.NEXT_PUBLIC_SITE_URL,
