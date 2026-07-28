@@ -17,7 +17,11 @@ const ids = [
 
 const outputDirectory = "public/media/florent";
 const generatedNames = [
-  ...ids.flatMap((id) => [`${id}-loop.mp4`, `${id}-poster.jpg`]),
+  ...ids.flatMap((id) => [
+    `${id}-loop.mp4`,
+    `${id}-poster.jpg`,
+    `${id}-preview.gif`,
+  ]),
   "about-poster.jpg",
 ];
 
@@ -94,6 +98,32 @@ test("ships five distinct, optimized MP4 loops and matching posters", async () =
   assert.equal(socialCardMetadata.height, 909);
 });
 
+test("ships five distinct optimized three-second GIF previews", async () => {
+  const hashes = new Set<string>();
+
+  for (const id of ids) {
+    const gifPath = `${outputDirectory}/${id}-preview.gif`;
+    const file = await readFile(gifPath);
+    const fileSize = (await stat(gifPath)).size;
+    const metadata = await sharp(gifPath, { animated: true }).metadata();
+    const inspection = inspectVideo(gifPath);
+
+    assert.match(file.subarray(0, 6).toString("ascii"), /^GIF8[79]a$/);
+    assert.equal(metadata.format, "gif");
+    assert.equal(metadata.width, 640);
+    assert.equal(metadata.pageHeight, 360);
+    assert.equal(metadata.pages, 24);
+    assert.equal(metadata.height, metadata.pageHeight * metadata.pages);
+    assert.equal(metadata.loop, 0);
+    assert.ok(fileSize > 10_000 && fileSize <= 2_000_000);
+    assert.match(inspection, /Duration: 00:00:03\.0[01]/);
+    assert.match(inspection, /640x360.*8 fps/);
+    hashes.add(createHash("sha256").update(file).digest("hex"));
+  }
+
+  assert.equal(hashes.size, ids.length);
+});
+
 test("content consumes the exact local media asset paths", async () => {
   const content = JSON.parse(await readFile("content/default.json", "utf8"));
 
@@ -103,12 +133,13 @@ test("content consumes the exact local media asset paths", async () => {
       (project: {
         id: string;
         posterUrl: string;
-        preview: { url: string };
+        preview: { url: string; fallbackGifUrl: string };
         gallery: { type: string; url: string }[];
       }) => ({
         id: project.id,
         posterUrl: project.posterUrl,
         previewUrl: project.preview.url,
+        fallbackGifUrl: project.preview.fallbackGifUrl,
         galleryUrl: project.gallery.find((item) => item.type === "video")?.url,
       }),
     ),
@@ -116,6 +147,7 @@ test("content consumes the exact local media asset paths", async () => {
       id,
       posterUrl: `/media/florent/${id}-poster.jpg`,
       previewUrl: `/media/florent/${id}-loop.mp4`,
+      fallbackGifUrl: `/media/florent/${id}-preview.gif`,
       galleryUrl: `/media/florent/${id}-loop.mp4`,
     })),
   );

@@ -190,7 +190,7 @@
       "preview": {
         "type": "video",
         "url": "/media/florent/afterdark-loop.mp4",
-        "fallbackGifUrl": ""
+        "fallbackGifUrl": "/media/florent/afterdark-preview.gif"
       },
       "fullVideo": {
         "provider": "vimeo",
@@ -297,7 +297,7 @@
       "preview": {
         "type": "video",
         "url": "/media/florent/nuit-35-loop.mp4",
-        "fallbackGifUrl": ""
+        "fallbackGifUrl": "/media/florent/nuit-35-preview.gif"
       },
       "fullVideo": {
         "provider": "youtube",
@@ -360,7 +360,7 @@
       "preview": {
         "type": "video",
         "url": "/media/florent/orbital-radio-loop.mp4",
-        "fallbackGifUrl": ""
+        "fallbackGifUrl": "/media/florent/orbital-radio-preview.gif"
       },
       "fullVideo": {
         "provider": "mp4",
@@ -423,7 +423,7 @@
       "preview": {
         "type": "video",
         "url": "/media/florent/material-memory-loop.mp4",
-        "fallbackGifUrl": ""
+        "fallbackGifUrl": "/media/florent/material-memory-preview.gif"
       },
       "fullVideo": {
         "provider": "mp4",
@@ -486,7 +486,7 @@
       "preview": {
         "type": "video",
         "url": "/media/florent/sans-titre-08-loop.mp4",
-        "fallbackGifUrl": ""
+        "fallbackGifUrl": "/media/florent/sans-titre-08-preview.gif"
       },
       "fullVideo": {
         "provider": "mp4",

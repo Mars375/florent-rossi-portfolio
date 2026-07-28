@@ -45,6 +45,7 @@ function runFfmpeg(args) {
 async function generateLoop({ id, source }) {
   const videoPath = join(outputDirectory, `${id}-loop.mp4`);
   const posterPath = join(outputDirectory, `${id}-poster.jpg`);
+  const gifPath = join(outputDirectory, `${id}-preview.gif`);
 
   runFfmpeg([
     "-f",
@@ -77,6 +78,19 @@ async function generateLoop({ id, source }) {
     "-q:v",
     "3",
     posterPath,
+  ]);
+
+  runFfmpeg([
+    "-i",
+    videoPath,
+    "-t",
+    "3",
+    "-an",
+    "-vf",
+    "fps=8,scale=640:-2:flags=lanczos,split[frames][paletteInput];[paletteInput]palettegen=max_colors=64:stats_mode=diff[palette];[frames][palette]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle",
+    "-loop",
+    "0",
+    gifPath,
   ]);
 }
 
