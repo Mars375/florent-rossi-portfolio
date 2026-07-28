@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { isAdminEmail } from "../../../lib/auth";
+import { adminAuthCallbackUrl } from "../../../lib/site-url";
 import { createBrowserSupabaseClient } from "../../../lib/supabase/browser";
 
 export function LoginForm() {
@@ -21,7 +22,7 @@ export function LoginForm() {
 
     try {
       const supabase = createBrowserSupabaseClient();
-      const redirectTo = `${window.location.origin}/auth/confirm?next=/admin`;
+      const redirectTo = adminAuthCallbackUrl();
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {

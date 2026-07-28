@@ -22,3 +22,9 @@ test("accepts both PKCE codes and token-hash email templates", async () => {
   assert.match(source, /exchangeCodeForSession\(code\)/);
   assert.match(source, /verifyOtp/);
 });
+
+test("login uses the canonical callback helper rather than the browser origin", async () => {
+  const source = await readFile("app/admin/login/LoginForm.tsx", "utf8");
+  assert.match(source, /adminAuthCallbackUrl\(\)/);
+  assert.doesNotMatch(source, /window\.location\.origin/);
+});

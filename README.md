@@ -68,11 +68,16 @@ Projet de développement : `kzowrkfounzeytgtvndh` (`eu-west-3`).
 1. Importer ce dépôt dans Vercel.
 2. Ajouter les quatre variables de `.env.example` dans les environnements
    Preview et Production.
-3. Définir `NEXT_PUBLIC_SITE_URL` avec l’URL Vercel en Preview, puis le domaine
-   définitif en Production.
-4. Dans Supabase Auth, définir la même URL comme `Site URL` et ajouter
-   `https://domaine-final.example/auth/confirm?next=/admin` aux URL de
-   redirection autorisées.
+3. Définir `NEXT_PUBLIC_SITE_URL` avec l’URL Vercel en Preview, puis
+   `https://florentrossi.com` en Production.
+4. Dans Supabase Auth hébergé, configurer exactement :
+   - Site URL: `https://florentrossi.com`
+   - Redirect URL:
+     `https://florentrossi.com/auth/confirm?next=/admin`
+   - Magic-link template link: `{{ .ConfirmationURL }}`
+   Ajouter `http://localhost:3000/auth/confirm?next=/admin` uniquement comme
+   URL de redirection supplémentaire pour le développement local, jamais comme
+   Site URL hébergée.
 5. Déployer, puis vérifier `/fr`, `/en`, `/admin/login` et un téléversement
    depuis l’éditeur.
 
@@ -88,15 +93,14 @@ domaine définitif du portfolio. Au lancement :
 5. Configurer le SMTP personnalisé de Supabase Auth avec l’hôte
    `smtp.resend.com`, le port `465`, l’utilisateur `resend` et la clé Resend
    comme mot de passe.
-6. Ajouter l’URL de rappel Vercel de production aux URL de redirection de
-   Supabase Auth.
+6. Vérifier que Supabase Auth utilise l’URL de redirection de production
+   `https://florentrossi.com/auth/confirm?next=/admin`.
 
 La route de confirmation accepte le flux PKCE standard et un modèle direct par
-`token_hash`. Si ce second modèle est utilisé, le lien du template Magic Link
-doit être :
+`token_hash`. Le lien du template Magic Link doit être :
 
 ```text
-{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email
+{{ .ConfirmationURL }}
 ```
 
 Le guide d’utilisation destiné au client est dans

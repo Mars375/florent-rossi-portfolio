@@ -8,6 +8,7 @@ import { generateMetadata as generateLegalMetadata } from "../app/[locale]/legal
 import { generateMetadata as generatePrivacyMetadata } from "../app/[locale]/privacy/page";
 import { generateMetadata as generateWorkMetadata } from "../app/[locale]/work/[slug]/page";
 import {
+  adminAuthCallbackUrl,
   getSiteUrl,
   localizedAlternates,
   PRODUCTION_SITE_URL,
@@ -57,6 +58,20 @@ test("uses florentrossi.com as the safe canonical production origin", () => {
   assert.equal(
     getSiteUrl("https://user:pass@example.com").href,
     "https://florentrossi.com/",
+  );
+});
+
+test("pins production admin authentication to florentrossi.com", () => {
+  assert.equal(
+    adminAuthCallbackUrl("http://localhost:3000", "production"),
+    "https://florentrossi.com/auth/confirm?next=/admin",
+  );
+});
+
+test("allows an explicitly configured localhost callback in development", () => {
+  assert.equal(
+    adminAuthCallbackUrl("http://localhost:3000", "development"),
+    "http://localhost:3000/auth/confirm?next=/admin",
   );
 });
 
