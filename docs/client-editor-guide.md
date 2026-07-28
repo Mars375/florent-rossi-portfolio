@@ -50,16 +50,17 @@ prêt.
 
 ## Ajouter les vidéos et les images
 
-Pour l’aperçu dans la grille, privilégiez une boucle MP4 ou WebM courte, muette,
-de 5 à 10 secondes. Elle se lance au survol sur ordinateur. Ajoutez également
-une affiche JPG, PNG ou WebP; elle reste visible sur mobile, si la vidéo échoue
-ou si la personne réduit les animations. Le GIF est un secours facultatif.
+Pour la grille de projets, ajoutez une affiche JPG, PNG ou WebP et un GIF
+d’aperçu court. L’affiche est toujours visible au repos. Sur ordinateur, le
+GIF se charge seulement au survol ou au focus clavier; sur mobile et pour les
+personnes qui réduisent les animations, l’affiche reste statique.
 
-Chaque fichier téléversé est limité à 25 Mo. Pour une page rapide :
+Conservez également une boucle MP4 ou WebM courte dans le champ vidéo. Elle
+n’est pas chargée par la grille, mais reste disponible dans l’étude de cas.
+Pour une page rapide, visez moins de 500 Ko pour l’affiche, moins de 2 Mo pour
+un GIF de trois secondes et moins de 4 Mo pour la boucle vidéo.
 
-- boucle d’aperçu : idéalement moins de 4 Mo;
-- affiche : idéalement moins de 500 Ko;
-- GIF : seulement si nécessaire, car il est souvent plus lourd qu’une vidéo.
+Chaque fichier téléversé est limité à 25 Mo.
 
 Le film complet ne doit pas être téléversé dans l’aperçu. Collez plutôt son lien
 Vimeo ou YouTube, ou une URL MP4 directe, puis choisissez le bon hébergeur dans
