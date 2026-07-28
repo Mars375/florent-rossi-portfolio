@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Locale, PortfolioContent } from "../../content/schema";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { ThemeToggle } from "./ThemeToggle";
 
 type SiteHeaderProps = {
   locale: Locale;
@@ -32,7 +33,10 @@ export function SiteHeader({
           {labels.contact}
         </a>
       </nav>
-      <LanguageSwitcher locale={locale} />
+      <div className="header-actions">
+        <LanguageSwitcher locale={locale} />
+        <ThemeToggle locale={locale} />
+      </div>
     </header>
   );
 }

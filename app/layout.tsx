@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { documentLanguage, REQUEST_LOCALE_HEADER } from "../lib/request-locale";
+import { themeBootstrapScript } from "../lib/theme";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -45,7 +46,15 @@ export default async function RootLayout({
   const requestHeaders = await headers();
 
   return (
-    <html lang={documentLanguage(requestHeaders.get(REQUEST_LOCALE_HEADER))}>
+    <html
+      lang={documentLanguage(requestHeaders.get(REQUEST_LOCALE_HEADER))}
+      suppressHydrationWarning
+    >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{ __html: themeBootstrapScript() }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   );
