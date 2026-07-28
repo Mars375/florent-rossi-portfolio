@@ -177,3 +177,43 @@ les mêmes tests ciblés ont été lancés directement via le CLI `tsx` du proje
 Le P2 de landmark footer est confirmé et corrigé dans la branche. Les clics,
 hover/focus, thème, viewport desktop/mobile, mouvement réduit live et console
 restent **NOT TESTABLE** tant que le kernel Codex Browser ne démarre pas.
+
+## Administration, authentification et sûreté des données — Tâche 3
+
+Référence auditée : `393e0052e2764c454f28d3907de93b6ed9f546cb`. Les contrôles de cette section sont non mutants : aucune donnée Supabase, configuration, authentification live, Vercel ou contenu de production n'a été modifié.
+
+### Frontières HTTP admin
+
+Lecture HTTP `HEAD` du 28-07-2026 à 20:44:55 GMT : `/admin` et `/admin/preview/fr` répondent tous deux `307` avec `Location: /admin/login`; `/admin/login` répond `200`. Les redirections observées sont des chemins locaux sur `florentrossi.com`, sans destination externe. Aucun magic link ni formulaire de connexion n'a été soumis.
+
+### Flux source et données
+
+Le flux inspecté est :
+
+```text
+request → proxy (rafraîchissement session) → layout protégé (getUser + isAdminEmail)
+draft → saveDraftAction → requireAdmin → parsePortfolioContent → upsert draft
+publish → publishDraftAction → requireAdmin → parsePortfolioContent
+→ RPC publish_portfolio → upsert atomique draft + published → revalidation
+→ nettoyage non bloquant des médias inutilisés
+```
+
+L'identité provient de `supabase.auth.getUser()` et l'allow-list applicative de `ADMIN_EMAILS`, sinon `ADMIN_EMAIL`, puis du défaut prévu. `safeNextPath()` n'accepte que des destinations locales; un code ou token OTP invalide de la route de confirmation ramène vers `/admin/login?error=invalid-link`. La validation de contenu précède les écritures de brouillon et de publication. Dans la migration finale, `publish_portfolio(jsonb)` est `security invoker`, vérifie `is_portfolio_admin()` et écrit `draft` et `published` par une même instruction `insert … on conflict`, transactionnelle. Un échec de validation ou de RPC ne modifie donc pas le contenu publié; l'échec du nettoyage de média après une publication réussie laisse seulement des médias orphelins.
+
+### Migrations locales et secrets
+
+La séquence locale `202607270001` à `202607280001` active RLS sur `portfolio_documents`, limite la lecture anonyme à `published`, limite les écritures document/Storage à `is_portfolio_admin()`, révoque l'exécution publique/anon/service-role de la RPC et retire les signatures historiques avant de créer la fonction atomique finale. Cette inspection locale ne prouve pas que ces migrations sont appliquées à distance.
+
+`git ls-files .env .env.local "*.pem" "*.key"` et la recherche des motifs de secrets prescrits n'ont produit aucun résultat : aucun fichier de secret ciblé suivi ni secret live correspondant n'a été trouvé dans les sources ou la documentation inspectées.
+
+### Tests, portée de preuve et limite Supabase
+
+Les 15 tests ciblés exécutés sont verts : 9 tests `auth-flow`, login et routes admin, puis 6 tests publication/migrations. Ils démontrent directement le comportement de `safeNextPath`, la normalisation de l'allow-list, et la validation avant l'appel à un faux publisher. D'autres assertions sont des inspections de motifs source/SQL. Ils ne simulent pas les échanges Supabase réels, ni les branches de succès/échec PKCE/OTP, `requireAdmin`, RLS ou RPC : ces branches restent à couvrir avec des doubles de client ou à vérifier en intégration.
+
+Le connecteur Supabase est présent. Ses sept appels strictement read-only (tables, advisors sécurité/performance et logs auth/Postgres/Storage) ont tous été bloqués avant lecture par le rafraîchissement OAuth : `OAuth authorization required`. L'état distant (tables, RLS/policies/fonctions actives, advisors et logs) demeure donc non vérifié. Suivi requis : réauthentifier le connecteur, puis relancer ces sept lectures sans mutation. Cette absence de preuve n'est pas un défaut P2 du produit.
+
+### Gates Tâche 3
+
+- Tests ciblés : 15 passés, 0 échec.
+- `git diff --check 393e005..HEAD` : succès après correction de ce lot.
+- Aucun défaut P0/P1/P2 confirmé par les preuves locales et HTTP disponibles; la vérification Supabase distante reste ouverte uniquement pour le motif OAuth indiqué ci-dessus.
