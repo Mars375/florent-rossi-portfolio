@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { AboutView } from "../../components/AboutView";
 import { isLocale } from "../../../lib/content/locales";
 import { getPublishedContent } from "../../../lib/content/repository";
-import { localizedAlternates } from "../../../lib/site-url";
+import { localizedAlternates, localizedUrl } from "../../../lib/site-url";
 
 type PageProps = { params: Promise<{ locale: string }> };
 
@@ -13,6 +13,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: resolvedLocale === "fr" ? "À propos" : "About",
     alternates: localizedAlternates(resolvedLocale, "/about"),
+    openGraph: { url: localizedUrl(resolvedLocale, "/about") },
   };
 }
 

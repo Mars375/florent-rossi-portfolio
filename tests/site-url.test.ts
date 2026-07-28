@@ -142,6 +142,14 @@ test("public canonicals pin florentrossi.com despite legacy or preview environme
       ]);
 
       assert.equal(href(root.metadataBase), "https://florentrossi.com/");
+      const icon =
+        root.icons &&
+        typeof root.icons === "object" &&
+        !Array.isArray(root.icons) &&
+        "icon" in root.icons
+          ? root.icons.icon
+          : undefined;
+      assert.equal(icon, "/favicon.svg");
       const openGraphImage = first(root.openGraph?.images);
       assert.ok(openGraphImage && typeof openGraphImage === "object");
       assert.ok("url" in openGraphImage);

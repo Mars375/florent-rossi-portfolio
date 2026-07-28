@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { PortfolioHome } from "../components/PortfolioHome";
 import { isLocale } from "../../lib/content/locales";
 import { getPublishedContent } from "../../lib/content/repository";
-import { localizedAlternates } from "../../lib/site-url";
+import { localizedAlternates, localizedUrl } from "../../lib/site-url";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -19,6 +19,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       ? "Florent Rossi, directeur artistique basé à Paris, recherche un poste permanent en agence ou chez une marque."
       : "Florent Rossi is a Paris-based art director looking for a permanent position in an agency or brand.",
     alternates: localizedAlternates(fr ? "fr" : "en"),
+    openGraph: { url: localizedUrl(fr ? "fr" : "en") },
   };
 }
 

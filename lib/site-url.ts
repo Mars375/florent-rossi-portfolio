@@ -44,14 +44,21 @@ export function localizedAlternates(
   locale: Locale,
   path = "",
 ): Metadata["alternates"] {
-  const base = getCanonicalSiteUrl();
-  const suffix = path === "" || path.startsWith("/") ? path : `/${path}`;
+  const suffix = normalizedPath(path);
 
   return {
-    canonical: new URL(`/${locale}${suffix}`, base),
+    canonical: localizedUrl(locale, suffix),
     languages: {
-      fr: new URL(`/fr${suffix}`, base),
-      en: new URL(`/en${suffix}`, base),
+      fr: localizedUrl("fr", suffix),
+      en: localizedUrl("en", suffix),
     },
   };
+}
+
+export function localizedUrl(locale: Locale, path = ""): URL {
+  return new URL(`/${locale}${normalizedPath(path)}`, getCanonicalSiteUrl());
+}
+
+function normalizedPath(path: string): string {
+  return path === "" || path.startsWith("/") ? path : `/${path}`;
 }

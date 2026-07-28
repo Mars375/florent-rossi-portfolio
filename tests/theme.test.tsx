@@ -217,3 +217,16 @@ test("theme controls and admin editor receive their intended color schemes", asy
     "pointer",
   );
 });
+
+test("external video consent copy has an opaque accessible backdrop", async () => {
+  const root = postcss.parse(await readFile("app/globals.css", "utf8"));
+  const backgrounds: string[] = [];
+  root.walkRules((rule) => {
+    if (rule.selector === ".external-video-consent > div") {
+      rule.walkDecls("background", (declaration) => {
+        backgrounds.push(declaration.value);
+      });
+    }
+  });
+  assert.ok(backgrounds.includes("#151515"));
+});

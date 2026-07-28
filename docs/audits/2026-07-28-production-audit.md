@@ -268,3 +268,86 @@ Le contrôle Browser live (DOM avant/après hover, réutilisation de l’éléme
 - Rouges observés : absence initiale de règle, puis règle unsafe `max-age=31536000, immutable` lors de la revue ; chacune échoue dans `runtime-config` pour le motif attendu.
 - Tests après correction : `runtime-config` 4/4 et `project-card` 9/9 passés ; TypeScript, ESLint ciblé et `next build` passés.
 - Suite complète : 112 passés, 0 échec (235,951 s) ; ESLint, TypeScript, `next build` et `git diff --check` réussis.
+
+## Accessibilité et SEO — Tâche 5
+
+Référence auditée : `20903f721378cb16a14bbb529726dcab06880933`. Les
+contrôles HTTP/SSR et Lighthouse sont non mutants et restent distincts des
+interactions navigateur : le kernel Browser Codex s'arrête pendant son
+initialisation ESM (usage de `require` dans un module ESM). Les parcours clavier,
+le rendu visuel au viewport et la console Browser sont donc **NOT TESTABLE** et
+ne sont pas remplacés par les preuves HTTP, SSR ou Lighthouse.
+
+### Matrice métadonnées SSR live
+
+Lecture `curl` du 28-07-2026 sur `/fr`, `/en`, leurs pages à-propos et
+`/work/afterdark` dans les deux langues : les six réponses sont `200`, portent
+un `html[lang]` attendu, un seul `h1`, un titre non vide, une description, un
+canonical, une image OG et les champs Twitter (card/title/description/image).
+Les titres et canonicals sont localisés et uniques pour les six routes. La
+production actuellement déployée présente néanmoins les défauts suivants :
+
+- `og:url` est absent des six documents ;
+- l'alternate `hreflang` `en` de chaque page pointe vers la même URL que la
+  locale courante au lieu de l'équivalent EN (par exemple `/fr` → `/fr`).
+
+La branche corrige la première cause dans les générateurs publics : chaque page
+home, about, legal, privacy et étude de cas renseigne `openGraph.url` avec
+l'URL canonique localisée. `localizedAlternates()` construit déjà les couples
+FR/EN exacts et ses tests locaux les verrouillent. La vérification SSR du HTML
+final et des `hreflang` corrigés reste à refaire après déploiement autorisé.
+
+### P2 — Endpoints d'indexation absents
+
+- **Preuve reproductible :** `curl.exe -sS -D C:\tmp\florent-rossi-robots.headers.txt https://florentrossi.com/robots.txt`
+  et l'appel équivalent pour `sitemap.xml` retournent tous deux `404`; Next
+  tente de traiter ces chemins comme une locale. Aucune règle d'indexation ni
+  sitemap XML n'était publiée.
+- **Impact :** les moteurs ne reçoivent ni consigne d'exclusion de
+  l'administration ni inventaire fiable des pages localisées publiées.
+- **Cause racine :** absence de fichiers de métadonnées Next `app/robots.ts`
+  et `app/sitemap.ts`.
+- **Test rouge :** `publishes robots and sitemap route generators` constatait
+  l'absence des deux fichiers.
+- **Correction minimale :** `robots.ts` autorise le public, exclut
+  `/admin/` et référence le domaine canonique; `sitemap.ts` énumère FR/EN pour
+  accueil, about, legal, privacy et les seuls projets `published`.
+- **Validation :** build local : routes statiques `/robots.txt` et
+  `/sitemap.xml` générées; tests d'indexation verts. Le contrôle HTTP live
+  reste en attente du déploiement.
+
+### P2 — Consentement vidéo externe insuffisamment contrasté
+
+- **Preuve reproductible :** les six JSON Lighthouse de l'étude de cas
+  (`project-mobile-*`, `project-desktop-*`) donnent 96/100 en accessibilité et
+  signalent le paragraphe de consentement `section#film … p` : texte blanc sur
+  pixel d'affiche `#f2ebdd`, ratio 1,18:1 (impact serious, WCAG 1.4.3).
+- **Cause racine :** le texte blanc était posé directement sur l'affiche
+  assombrie, dont le contraste réel varie avec l'image.
+- **Test rouge :** `external video consent copy has an opaque accessible
+  backdrop` échouait car la règle ne déclarait pas de fond.
+- **Correction minimale :** le bloc de texte du consentement reçoit le fond
+  opaque `#151515`, garantissant 18,5:1 avec son texte blanc sans changer le
+  flux ni le mécanisme de consentement.
+- **Validation :** test CSS ciblé vert; une nouvelle mesure Lighthouse live
+  est requise après déploiement.
+
+### P3 — Requête favicon 404 dans les mesures Lighthouse
+
+Les douze rapports rapportent une erreur console réseau pour `/favicon.ico`.
+La branche déclare explicitement l'icône existante `/favicon.svg` dans les
+métadonnées racine, afin que le document serve une balise d'icône explicite.
+Le contrôle navigateur/console et la confirmation du comportement live restent
+**NOT TESTABLE** dans cet environnement.
+
+### Contrats locaux et limites
+
+- `theme`, `project-card` et `video-consent` valident le focus annoncé, la
+  réduction de mouvement (poster seul), les contrastes de tokens et le
+  consentement sans iframe préalable. Tous passent localement.
+- Le parcours strictement clavier (header → langue → thème → grille → étude →
+  consentement → footer) reste **NOT TESTABLE** faute de Browser ; aucun
+  résultat HTTP/SSR ne lui est substitué.
+- Les médianes Lighthouse existantes sont : accueil mobile/desktop A11y
+  100/100; étude mobile/desktop 96/96, ce dernier résultat correspondant au
+  défaut de contraste décrit ci-dessus.
