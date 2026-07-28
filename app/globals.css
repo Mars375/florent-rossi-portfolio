@@ -283,12 +283,26 @@ a:focus-visible {
   aspect-ratio: 1;
 }
 
-.project-media img {
+.project-media img,
+.project-media video {
   position: absolute;
   inset: 0;
+  width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: filter 350ms ease;
+}
+
+.project-media video,
+.project-preview-fallback {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 180ms ease, visibility 180ms ease;
+}
+
+.project-media video.is-visible,
+.project-preview-fallback.is-visible {
+  opacity: 1;
+  visibility: visible;
 }
 
 .project-meta {

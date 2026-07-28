@@ -3,8 +3,9 @@ import test from "node:test";
 import content from "../content/default.json";
 import { parsePortfolioContent } from "../content/schema";
 import {
-  canUseAnimatedPreview,
+  canActivateAnimatedPreview,
   projectPreviewGifUrl,
+  projectPreviewSources,
 } from "../lib/content/preview";
 
 const project = parsePortfolioContent(content).projects[0];
@@ -37,23 +38,47 @@ test("supports a direct GIF preview and safely accepts no GIF", () => {
   assert.equal(projectPreviewGifUrl(posterOnly), "");
 });
 
-test("permits animation only with GIF, hover, fine pointer and full motion", () => {
-  const eligible = {
+test("prefers MP4 with GIF fallback for project-card motion", () => {
+  assert.deepEqual(projectPreviewSources(project), {
+    videoUrl: "/media/florent/afterdark-loop.mp4",
     gifUrl: "/media/florent/afterdark-preview.gif",
-    canHover: true,
-    finePointer: true,
+  });
+});
+
+test("activates motion from real mouse or focus but not touch or reduced motion", () => {
+  const eligible = {
+    videoUrl: "/media/florent/afterdark-loop.mp4",
+    gifUrl: "/media/florent/afterdark-preview.gif",
     reducedMotion: false,
   };
 
-  assert.equal(canUseAnimatedPreview(eligible), true);
-  assert.equal(canUseAnimatedPreview({ ...eligible, gifUrl: "" }), false);
-  assert.equal(canUseAnimatedPreview({ ...eligible, canHover: false }), false);
   assert.equal(
-    canUseAnimatedPreview({ ...eligible, finePointer: false }),
+    canActivateAnimatedPreview({ ...eligible, interaction: "mouse" }),
+    true,
+  );
+  assert.equal(
+    canActivateAnimatedPreview({ ...eligible, interaction: "focus" }),
+    true,
+  );
+  assert.equal(
+    canActivateAnimatedPreview({ ...eligible, interaction: "touch" }),
     false,
   );
   assert.equal(
-    canUseAnimatedPreview({ ...eligible, reducedMotion: true }),
+    canActivateAnimatedPreview({
+      ...eligible,
+      interaction: "mouse",
+      reducedMotion: true,
+    }),
+    false,
+  );
+  assert.equal(
+    canActivateAnimatedPreview({
+      videoUrl: "",
+      gifUrl: "",
+      interaction: "mouse",
+      reducedMotion: false,
+    }),
     false,
   );
 });

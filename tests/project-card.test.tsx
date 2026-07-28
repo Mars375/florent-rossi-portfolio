@@ -30,6 +30,7 @@ test("card and case-study media styles never scale media on hover", async () => 
   const root = postcss.parse(await readFile("app/globals.css", "utf8"));
   const forbidden: string[] = [];
   let progressAnimation = "";
+  const sharedMediaGeometry: Record<string, string> = {};
 
   root.walkRules((rule) => {
     const targetsCardHover =
@@ -39,6 +40,22 @@ test("card and case-study media styles never scale media on hover", async () => 
     const targetsCardMedia =
       rule.selector.includes(".project-media img") ||
       rule.selector.includes(".project-media video");
+    const selectors = rule.selectors.map((selector) => selector.trim());
+
+    if (
+      selectors.includes(".project-media img") &&
+      selectors.includes(".project-media video")
+    ) {
+      rule.walkDecls((declaration) => {
+        if (
+          ["position", "inset", "width", "height", "object-fit"].includes(
+            declaration.prop,
+          )
+        ) {
+          sharedMediaGeometry[declaration.prop] = declaration.value;
+        }
+      });
+    }
 
     rule.walkDecls((declaration) => {
       if (
@@ -68,4 +85,11 @@ test("card and case-study media styles never scale media on hover", async () => 
 
   assert.deepEqual(forbidden, []);
   assert.equal(progressAnimation, "preview-progress 3s linear infinite");
+  assert.deepEqual(sharedMediaGeometry, {
+    position: "absolute",
+    inset: "0",
+    width: "100%",
+    height: "100%",
+    "object-fit": "cover",
+  });
 });

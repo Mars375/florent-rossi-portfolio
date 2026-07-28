@@ -1,11 +1,6 @@
 import type { Project } from "../../content/schema";
 
-export type PreviewEnvironment = {
-  gifUrl: string;
-  canHover: boolean;
-  finePointer: boolean;
-  reducedMotion: boolean;
-};
+export type PreviewInteraction = "mouse" | "focus" | "touch";
 
 export function projectPreviewGifUrl(project: Project): string {
   if (project.preview.fallbackGifUrl) {
@@ -15,11 +10,23 @@ export function projectPreviewGifUrl(project: Project): string {
   return project.preview.type === "gif" ? project.preview.url : "";
 }
 
-export function canUseAnimatedPreview({
+export function projectPreviewSources(project: Project) {
+  return {
+    videoUrl: project.preview.type === "video" ? project.preview.url : "",
+    gifUrl: projectPreviewGifUrl(project),
+  };
+}
+
+export function canActivateAnimatedPreview({
+  videoUrl,
   gifUrl,
-  canHover,
-  finePointer,
+  interaction,
   reducedMotion,
-}: PreviewEnvironment): boolean {
-  return Boolean(gifUrl) && canHover && finePointer && !reducedMotion;
+}: {
+  videoUrl: string;
+  gifUrl: string;
+  interaction: PreviewInteraction;
+  reducedMotion: boolean;
+}): boolean {
+  return Boolean(videoUrl || gifUrl) && !reducedMotion && interaction !== "touch";
 }

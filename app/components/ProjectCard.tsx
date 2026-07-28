@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Locale, Project } from "../../content/schema";
 import {
-  canUseAnimatedPreview,
-  projectPreviewGifUrl,
+  canActivateAnimatedPreview,
+  projectPreviewSources,
 } from "../../lib/content/preview";
 
 export function ProjectCard({
@@ -21,78 +21,145 @@ export function ProjectCard({
   viewLabel: string;
   routeBase?: string;
 }) {
-  const gifUrl = projectPreviewGifUrl(project);
-  const [previewEligible, setPreviewEligible] = useState(false);
+  const { videoUrl, gifUrl } = projectPreviewSources(project);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [hasActivated, setHasActivated] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
   const [gifFailed, setGifFailed] = useState(false);
 
   useEffect(() => {
-    const hover = window.matchMedia("(hover: hover)");
-    const pointer = window.matchMedia("(pointer: fine)");
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     const update = () => {
-      const eligible = canUseAnimatedPreview({
-        gifUrl,
-        canHover: hover.matches,
-        finePointer: pointer.matches,
-        reducedMotion: motion.matches,
-      });
-      setPreviewEligible(eligible);
-      if (!eligible) {
-        setHovered(false);
-        setFocused(false);
-      }
+      setReducedMotion(motion.matches);
     };
 
     update();
-    hover.addEventListener("change", update);
-    pointer.addEventListener("change", update);
     motion.addEventListener("change", update);
     return () => {
-      hover.removeEventListener("change", update);
-      pointer.removeEventListener("change", update);
       motion.removeEventListener("change", update);
     };
-  }, [gifUrl]);
+  }, []);
 
-  const showGif = previewEligible && (hovered || focused) && !gifFailed;
+  const activate = (interaction: "mouse" | "focus") => {
+    if (
+      canActivateAnimatedPreview({
+        videoUrl,
+        gifUrl,
+        interaction,
+        reducedMotion,
+      })
+    ) {
+      setHasActivated(true);
+    }
+  };
+
+  const mousePreviewActive =
+    hovered &&
+    canActivateAnimatedPreview({
+      videoUrl,
+      gifUrl,
+      interaction: "mouse",
+      reducedMotion,
+    });
+  const focusPreviewActive =
+    focused &&
+    canActivateAnimatedPreview({
+      videoUrl,
+      gifUrl,
+      interaction: "focus",
+      reducedMotion,
+    });
+  const previewActive = mousePreviewActive || focusPreviewActive;
+  const showVideo = previewActive && Boolean(videoUrl) && !videoFailed;
+  const showGif =
+    previewActive && videoFailed && Boolean(gifUrl) && !gifFailed;
+  const previewShowing = showVideo || showGif;
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) {
+      return;
+    }
+
+    if (showVideo) {
+      const playback = video.play();
+      playback?.catch(() => setVideoFailed(true));
+      return;
+    }
+
+    video.pause();
+  }, [showVideo]);
+
   const number = String(project.order).padStart(2, "0");
   const projectHref = `${routeBase}/${locale}/work/${project.slug}`;
 
   return (
     <article className={`project-card project-${project.layout}`}>
       <div
-        className={`project-media ${showGif ? "is-previewing" : ""}`}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        className={`project-media ${previewShowing ? "is-previewing" : ""}`}
+        onPointerEnter={(event) => {
+          if (event.pointerType === "mouse") {
+            activate("mouse");
+            setHovered(true);
+          }
+        }}
+        onPointerLeave={(event) => {
+          if (event.pointerType === "mouse") {
+            setHovered(false);
+          }
+        }}
       >
         <Link
           className="project-media-link focus-ring"
           href={projectHref}
-          onFocus={() => setFocused(true)}
+          onFocus={() => {
+            activate("focus");
+            setFocused(true);
+          }}
           onBlur={() => setFocused(false)}
           aria-label={`${viewLabel}: ${project.title[locale]}`}
         >
           {/* The source is client-managed JSON and may use any HTTPS host. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={showGif ? gifUrl : project.posterUrl}
+            src={project.posterUrl}
             alt=""
             loading={project.order === 1 ? "eager" : "lazy"}
-            onError={() => {
-              if (showGif) {
-                setGifFailed(true);
-                setHovered(false);
-                setFocused(false);
-              }
-            }}
           />
-          <span className={`playing-badge ${showGif ? "is-visible" : ""}`}>
+          {hasActivated && videoUrl && !videoFailed ? (
+            <video
+              ref={videoRef}
+              className={showVideo ? "is-visible" : ""}
+              muted
+              loop
+              playsInline
+              preload="none"
+              poster={project.posterUrl}
+              aria-hidden="true"
+              onError={() => setVideoFailed(true)}
+            >
+              <source src={videoUrl} type="video/mp4" />
+            </video>
+          ) : null}
+          {showGif ? (
+            /* The fallback can be a client-managed URL. */
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              className="project-preview-fallback is-visible"
+              src={gifUrl}
+              alt=""
+              aria-hidden="true"
+              onError={() => setGifFailed(true)}
+            />
+          ) : null}
+          <span className={`playing-badge ${previewShowing ? "is-visible" : ""}`}>
             {playingLabel} 00:03
           </span>
-          <span className={`preview-progress ${showGif ? "is-active" : ""}`} />
+          <span className={`preview-progress ${previewShowing ? "is-active" : ""}`} />
         </Link>
       </div>
       <Link className="project-meta focus-ring" href={projectHref}>
