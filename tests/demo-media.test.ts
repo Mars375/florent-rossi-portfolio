@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFile, stat } from "node:fs/promises";
-import { join } from "node:path";
+import { mkdtemp, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import test from "node:test";
 import ffmpegPath from "ffmpeg-static";
 import sharp from "sharp";
@@ -164,6 +165,38 @@ test("generator is idempotent for committed production media", async () => {
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(await checksums(outputDirectory, generatedNames), beforeMedia);
   assert.deepEqual(await checksums("public", ["og.png"]), beforeSocialCard);
+});
+
+test("interrupted media generation preserves the existing loop", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "florent-media-generation-"));
+  const loopPath = join(directory, "public", "media", "florent", "afterdark-loop.mp4");
+  const original = Buffer.from("existing production loop");
+  await mkdir(join(directory, "public", "media", "florent"), { recursive: true });
+  await writeFile(loopPath, original);
+
+  const child = spawn(process.execPath, [resolve("scripts/generate-demo-media.mjs")], {
+    cwd: directory,
+    stdio: "ignore",
+  });
+  const exited = new Promise<void>((resolveChild) => child.once("exit", () => resolveChild()));
+
+  try {
+    const deadline = Date.now() + 10_000;
+    while (Date.now() < deadline) {
+      if (!(await readFile(loopPath)).equals(original)) {
+        child.kill();
+        await exited;
+        break;
+      }
+      await new Promise((resolveDelay) => setTimeout(resolveDelay, 25));
+    }
+
+    assert.deepEqual(await readFile(loopPath), original);
+  } finally {
+    child.kill();
+    await exited;
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 
 test("generates the social card with the tracked Geist font rather than a host fallback", async () => {

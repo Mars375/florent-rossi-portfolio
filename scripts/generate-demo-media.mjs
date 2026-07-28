@@ -1,5 +1,5 @@
-import { copyFile, mkdir, readFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { copyFile, mkdir, readFile, rename, rm } from "node:fs/promises";
+import { basename, dirname, extname, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import ffmpegPath from "ffmpeg-static";
 import sharp from "sharp";
@@ -42,56 +42,79 @@ function runFfmpeg(args) {
   }
 }
 
+function temporaryOutputPath(outputPath) {
+  const extension = extname(outputPath);
+  const name = basename(outputPath, extension);
+  return join(dirname(outputPath), `.${name}-${process.pid}-${Date.now()}${extension}`);
+}
+
+async function writeAtomically(outputPath, write) {
+  const temporaryPath = temporaryOutputPath(outputPath);
+
+  try {
+    await write(temporaryPath);
+    await rename(temporaryPath, outputPath);
+  } finally {
+    await rm(temporaryPath, { force: true });
+  }
+}
+
 async function generateLoop({ id, source }) {
   const videoPath = join(outputDirectory, `${id}-loop.mp4`);
   const posterPath = join(outputDirectory, `${id}-poster.jpg`);
   const gifPath = join(outputDirectory, `${id}-preview.gif`);
 
-  runFfmpeg([
-    "-f",
-    "lavfi",
-    "-i",
-    source,
-    "-t",
-    "6",
-    "-an",
-    "-c:v",
-    "libx264",
-    "-preset",
-    "slow",
-    "-crf",
-    "24",
-    "-pix_fmt",
-    "yuv420p",
-    "-movflags",
-    "+faststart",
-    videoPath,
-  ]);
+  await writeAtomically(videoPath, async (temporaryPath) => {
+    runFfmpeg([
+      "-f",
+      "lavfi",
+      "-i",
+      source,
+      "-t",
+      "6",
+      "-an",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "slow",
+      "-crf",
+      "24",
+      "-pix_fmt",
+      "yuv420p",
+      "-movflags",
+      "+faststart",
+      temporaryPath,
+    ]);
+  });
 
-  runFfmpeg([
-    "-ss",
-    "1",
-    "-i",
-    videoPath,
-    "-frames:v",
-    "1",
-    "-q:v",
-    "3",
-    posterPath,
-  ]);
+  await writeAtomically(posterPath, async (temporaryPath) => {
+    runFfmpeg([
+      "-ss",
+      "1",
+      "-i",
+      videoPath,
+      "-frames:v",
+      "1",
+      "-q:v",
+      "3",
+      temporaryPath,
+    ]);
+  });
 
-  runFfmpeg([
-    "-i",
-    videoPath,
-    "-t",
-    "3",
-    "-an",
-    "-vf",
-    "fps=8,scale=640:-2:flags=lanczos,split[frames][paletteInput];[paletteInput]palettegen=max_colors=64:stats_mode=diff[palette];[frames][palette]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle",
-    "-loop",
-    "0",
-    gifPath,
-  ]);
+  await writeAtomically(gifPath, async (temporaryPath) => {
+    runFfmpeg([
+      "-i",
+      videoPath,
+      "-t",
+      "3",
+      "-an",
+      "-vf",
+      "fps=8,scale=640:-2:flags=lanczos,split[frames][paletteInput];[paletteInput]palettegen=max_colors=64:stats_mode=diff[palette];[frames][palette]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle",
+      "-loop",
+      "0",
+      temporaryPath,
+    ]);
+  });
 }
 
 async function socialCard() {
@@ -126,13 +149,14 @@ async function main() {
     await generateLoop(loop);
   }
 
-  await copyFile(
-    join(outputDirectory, "material-memory-poster.jpg"),
-    join(outputDirectory, "about-poster.jpg"),
+  await writeAtomically(join(outputDirectory, "about-poster.jpg"), (temporaryPath) =>
+    copyFile(join(outputDirectory, "material-memory-poster.jpg"), temporaryPath),
   );
 
   await mkdir(dirname("public/og.png"), { recursive: true });
-  await sharp(Buffer.from(await socialCard())).png().toFile("public/og.png");
+  await writeAtomically("public/og.png", async (temporaryPath) =>
+    sharp(Buffer.from(await socialCard())).png().toFile(temporaryPath),
+  );
 }
 
 main().catch((error) => {
