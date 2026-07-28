@@ -1251,6 +1251,14 @@ figcaption {
   max-width: 1040px;
 }
 
+.legal-editor .admin-form-section {
+  max-width: 1040px;
+}
+
+.legal-editor textarea {
+  min-height: 76px;
+}
+
 .admin-form-section {
   display: grid;
   gap: 22px;

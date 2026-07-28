@@ -17,17 +17,19 @@ import {
   reorderProjects,
 } from "../../lib/content/editor";
 import { publishDraftAction, saveDraftAction } from "./actions";
+import { LegalEditor } from "./components/LegalEditor";
 import { LocalizedField } from "./components/LocalizedField";
 import { ProjectEditor } from "./components/ProjectEditor";
 import { PublishBar, type SaveStatus } from "./components/PublishBar";
 
-type Tab = "site" | "home" | "about" | "projects";
+type Tab = "site" | "home" | "about" | "projects" | "legal";
 
 const tabLabels: Record<Tab, string> = {
   site: "Site",
   home: "Accueil",
   about: "À propos",
   projects: "Projets",
+  legal: "Légal",
 };
 
 export function AdminEditor({
@@ -524,6 +526,17 @@ export function AdminEditor({
               </section>
             ))}
           </div>
+        ) : null}
+
+        {tab === "legal" ? (
+          <LegalEditor
+            value={content.legal}
+            onChange={(value) =>
+              edit((draft) => {
+                draft.legal = value;
+              })
+            }
+          />
         ) : null}
 
         {tab === "projects" ? (
