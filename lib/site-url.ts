@@ -49,8 +49,8 @@ export function localizedAlternates(
   return {
     canonical: localizedUrl(locale, suffix),
     languages: {
-      fr: localizedUrl("fr", suffix),
-      en: localizedUrl("en", suffix),
+      fr: localizedUrl("fr", suffix).toString(),
+      en: localizedUrl("en", suffix).toString(),
     },
   };
 }
