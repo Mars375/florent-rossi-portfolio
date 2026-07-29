@@ -121,6 +121,15 @@ test("builds exact FR and EN canonical alternates", () => {
   );
 });
 
+test("uses absolute strings so Next preserves distinct hreflang URLs", () => {
+  const languages = localizedAlternates("fr")?.languages;
+
+  assert.equal(typeof languages?.fr, "string");
+  assert.equal(typeof languages?.en, "string");
+  assert.equal(languages?.fr, "https://florentrossi.com/fr");
+  assert.equal(languages?.en, "https://florentrossi.com/en");
+});
+
 test("public canonicals pin florentrossi.com despite legacy or preview environment origins", async () => {
   const previous = process.env.NEXT_PUBLIC_SITE_URL;
   const generateRootMetadata = await loadRootMetadataGenerator();

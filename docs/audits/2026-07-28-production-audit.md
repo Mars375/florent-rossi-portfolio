@@ -27,18 +27,18 @@ qui restera nécessaire après déploiement quand il y en a un.
 | --- | ---: | ---: | ---: |
 | P0 | 0 | 0 | 0 |
 | P1 | 0 | 0 | 0 |
-| P2 | 5 | 5 | 0 |
+| P2 | 6 | 6 | 0 |
 | P3 | 3 | 3 | 0 |
-| **Total** | **8** | **8** | **0** |
+| **Total** | **9** | **9** | **0** |
 
 | Lot | Découverts | Ouverts | État |
 | --- | ---: | ---: | --- |
 | Fiabilité et sécurité | 1 | 0 | corrigé et validé localement |
 | Performance et expérience | 1 | 0 | corrigé et validé localement |
-| Accessibilité et SEO | 5 | 0 | corrigé et validé localement |
+| Accessibilité et SEO | 6 | 0 | corrigé et validé localement |
 | Structure et maintenabilité | 1 | 0 | corrigé et validé localement |
 
-Les 8 constats restent comptés comme découverts pour conserver la trace de
+Les 9 constats restent comptés comme découverts pour conserver la trace de
 l'audit ; aucun n'est un défaut ouvert de la branche. Les contrôles qui exigent
 un déploiement ou une autorité externe figurent uniquement dans le backlog de
 suivi, sans être qualifiés de vulnérabilité produit.
@@ -154,6 +154,28 @@ suivi, sans être qualifiés de vulnérabilité produit.
   clavier visuel avec un Browser opérationnel.
 - **Lot :** Accessibilité et SEO. **État :** corrigé dans la branche.
 
+### P2 — L’alternate anglais reprenait l’URL française
+
+- **État initial / preuve :** après le déploiement du commit de merge
+  `ee6570589f4cf0d67eb99d42fba693ca859272fd`, le HTML de `/fr` publiait
+  `hreflang="fr"` et `hreflang="en"` avec la même URL
+  `https://florentrossi.com/fr`. Le build local reproduisait exactement ce
+  rendu.
+- **Impact :** les moteurs de recherche ne recevaient pas le lien vers la
+  version anglaise, ce qui dégradait l’association des pages localisées.
+- **Cause racine :** `alternates.languages` recevait des objets `URL`. Next.js
+  16.2.12 les résolvait vers l’URL canonique courante lors de la sérialisation,
+  bien que le helper retourne directement deux objets distincts.
+- **Correction appliquée :** les valeurs FR/EN de `alternates.languages` sont
+  maintenant des chaînes absolues, tandis que la canonical conserve son type
+  existant.
+- **Validation :** test rouge puis vert dans `tests/site-url.test.ts`; après
+  rebuild, `/fr` et `/en` produisent chacun les alternates exacts
+  `https://florentrossi.com/fr` et `https://florentrossi.com/en`.
+- **Contrôle post-déploiement :** extraire les deux balises sur le domaine
+  public après fusion du hotfix.
+- **Lot :** Accessibilité et SEO. **État :** corrigé dans le hotfix.
+
 ### P3 — URL Open Graph canonique absente des pages publiques
 
 - **État initial / preuve :** la matrice SSR live observait l'absence de
@@ -253,7 +275,8 @@ et les contrôles externes requis après intégration sont isolés ensuite.
   métadonnées localisées, puis corriger les défauts visuels mesurés.
 - **Corrections réalisées :** footer sur legal/privacy et études de cas (P2),
   robots/sitemap et protection admin (P2), consentement vidéo contrasté (P2),
-  `og:url` canonique localisé (P3), favicon SVG déclaré (P3).
+  alternates FR/EN distincts (P2), `og:url` canonique localisé (P3), favicon SVG
+  déclaré (P3).
 - **Succès utilisateur :** navigation de lecteur d'écran complète, exploration
   et partage social localisés, consentement lisible et absence de requête
   d'icône implicite.
@@ -282,10 +305,10 @@ et les contrôles externes requis après intégration sont isolés ensuite.
   Storage). Bloqueur : `OAuth authorization required`. Succès : état distant
   read-only consigné et comparé aux migrations locales. Risque faible.
 - **Post-déploiement :** après déploiement autorisé, rejouer les `HEAD` médias,
-  la matrice HTTP/SSR (footer, robots, sitemap, `og:url`, favicon), Lighthouse,
-  le clavier, les interactions, mobile et la console. Bloqueurs : déploiement
-  hors périmètre et Browser Codex ESM. Succès : comportements servis en
-  production et mesures live consignées. Risque moyen.
+  la matrice HTTP/SSR (footer, robots, sitemap, alternates FR/EN, `og:url`,
+  favicon), Lighthouse, le clavier, les interactions, mobile et la console.
+  Bloqueurs : déploiement hors périmètre et Browser Codex ESM. Succès :
+  comportements servis en production et mesures live consignées. Risque moyen.
 - **npm réseau :** après autorisation explicite, exécuter `npm audit --omit=dev
   --json`, `npm audit --json` et `npm outdated --json`. Bloqueur : le sandbox
   et l'escalade ont refusé l'envoi du graphe au registre npm. Succès : résultats
