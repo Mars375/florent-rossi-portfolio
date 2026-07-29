@@ -1,5 +1,5 @@
-import { copyFile, mkdir, readFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { copyFile, mkdir, readdir, readFile, rename, rm } from "node:fs/promises";
+import { basename, dirname, extname, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import ffmpegPath from "ffmpeg-static";
 import sharp from "sharp";
@@ -42,56 +42,122 @@ function runFfmpeg(args) {
   }
 }
 
+function temporaryOutputPath(outputPath) {
+  const extension = extname(outputPath);
+  const name = basename(outputPath, extension);
+  return join(dirname(outputPath), `.${name}-${process.pid}-${Date.now()}${extension}`);
+}
+
+function escapeRegularExpression(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function isProcessAlive(pid) {
+  if (!Number.isSafeInteger(pid) || pid <= 0) {
+    return true;
+  }
+
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return !(error && typeof error === "object" && "code" in error && error.code === "ESRCH");
+  }
+}
+
+async function removeStaleTemporaryOutput(outputPath) {
+  const extension = extname(outputPath);
+  const name = basename(outputPath, extension);
+  const directory = dirname(outputPath);
+  const temporaryName = new RegExp(
+    `^${escapeRegularExpression(`.${name}-`)}(\\d+)-\\d+${escapeRegularExpression(extension)}$`,
+  );
+
+  let entries;
+  try {
+    entries = await readdir(directory);
+  } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") {
+      return;
+    }
+    throw error;
+  }
+
+  await Promise.all(
+    entries
+      .map((entry) => ({ entry, match: entry.match(temporaryName) }))
+      .filter(({ match }) => match && !isProcessAlive(Number(match[1])))
+      .map(({ entry }) => rm(join(directory, entry), { force: true })),
+  );
+}
+
+async function writeAtomically(outputPath, write) {
+  const temporaryPath = temporaryOutputPath(outputPath);
+
+  try {
+    await write(temporaryPath);
+    await rename(temporaryPath, outputPath);
+  } finally {
+    await rm(temporaryPath, { force: true });
+  }
+}
+
 async function generateLoop({ id, source }) {
   const videoPath = join(outputDirectory, `${id}-loop.mp4`);
   const posterPath = join(outputDirectory, `${id}-poster.jpg`);
   const gifPath = join(outputDirectory, `${id}-preview.gif`);
 
-  runFfmpeg([
-    "-f",
-    "lavfi",
-    "-i",
-    source,
-    "-t",
-    "6",
-    "-an",
-    "-c:v",
-    "libx264",
-    "-preset",
-    "slow",
-    "-crf",
-    "24",
-    "-pix_fmt",
-    "yuv420p",
-    "-movflags",
-    "+faststart",
-    videoPath,
-  ]);
+  await writeAtomically(videoPath, async (temporaryPath) => {
+    runFfmpeg([
+      "-f",
+      "lavfi",
+      "-i",
+      source,
+      "-t",
+      "6",
+      "-an",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "slow",
+      "-crf",
+      "24",
+      "-pix_fmt",
+      "yuv420p",
+      "-movflags",
+      "+faststart",
+      temporaryPath,
+    ]);
+  });
 
-  runFfmpeg([
-    "-ss",
-    "1",
-    "-i",
-    videoPath,
-    "-frames:v",
-    "1",
-    "-q:v",
-    "3",
-    posterPath,
-  ]);
+  await writeAtomically(posterPath, async (temporaryPath) => {
+    runFfmpeg([
+      "-ss",
+      "1",
+      "-i",
+      videoPath,
+      "-frames:v",
+      "1",
+      "-q:v",
+      "3",
+      temporaryPath,
+    ]);
+  });
 
-  runFfmpeg([
-    "-i",
-    videoPath,
-    "-t",
-    "3",
-    "-an",
-    "-vf",
-    "fps=8,scale=640:-2:flags=lanczos,split[frames][paletteInput];[paletteInput]palettegen=max_colors=64:stats_mode=diff[palette];[frames][palette]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle",
-    "-loop",
-    "0",
-    gifPath,
-  ]);
+  await writeAtomically(gifPath, async (temporaryPath) => {
+    runFfmpeg([
+      "-i",
+      videoPath,
+      "-t",
+      "3",
+      "-an",
+      "-vf",
+      "fps=8,scale=640:-2:flags=lanczos,split[frames][paletteInput];[paletteInput]palettegen=max_colors=64:stats_mode=diff[palette];[frames][palette]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle",
+      "-loop",
+      "0",
+      temporaryPath,
+    ]);
+  });
 }
 
 async function socialCard() {
@@ -121,18 +187,28 @@ async function main() {
   }
 
   await mkdir(outputDirectory, { recursive: true });
+  await Promise.all([
+    ...loops.flatMap(({ id }) => [
+      join(outputDirectory, `${id}-loop.mp4`),
+      join(outputDirectory, `${id}-poster.jpg`),
+      join(outputDirectory, `${id}-preview.gif`),
+    ]),
+    join(outputDirectory, "about-poster.jpg"),
+    "public/og.png",
+  ].map(removeStaleTemporaryOutput));
 
   for (const loop of loops) {
     await generateLoop(loop);
   }
 
-  await copyFile(
-    join(outputDirectory, "material-memory-poster.jpg"),
-    join(outputDirectory, "about-poster.jpg"),
+  await writeAtomically(join(outputDirectory, "about-poster.jpg"), (temporaryPath) =>
+    copyFile(join(outputDirectory, "material-memory-poster.jpg"), temporaryPath),
   );
 
   await mkdir(dirname("public/og.png"), { recursive: true });
-  await sharp(Buffer.from(await socialCard())).png().toFile("public/og.png");
+  await writeAtomically("public/og.png", async (temporaryPath) =>
+    sharp(Buffer.from(await socialCard())).png().toFile(temporaryPath),
+  );
 }
 
 main().catch((error) => {

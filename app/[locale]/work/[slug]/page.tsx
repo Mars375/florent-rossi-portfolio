@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { ProjectView } from "../../../components/ProjectView";
 import { isLocale } from "../../../../lib/content/locales";
 import { getPublishedContent } from "../../../../lib/content/repository";
-import { localizedAlternates } from "../../../../lib/site-url";
+import { localizedAlternates, localizedUrl } from "../../../../lib/site-url";
+import { publicPageMetadata } from "../../../../lib/page-metadata";
 
 type PageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -14,11 +15,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const locale = isLocale(rawLocale) ? rawLocale : "en";
   const content = await getPublishedContent();
   const project = content.projects.find((item) => item.slug === slug);
+  const pageTitle = project?.title[locale] ?? "Project";
+  const pageDescription = project?.summary[locale];
+  const path = `/work/${project?.slug ?? slug}`;
 
   return {
-    title: project?.title[locale] ?? "Project",
-    description: project?.summary[locale],
-    alternates: localizedAlternates(locale, `/work/${project?.slug ?? slug}`),
+    ...publicPageMetadata({
+      pageTitle,
+      ...(pageDescription ? { pageDescription } : {}),
+      url: localizedUrl(locale, path),
+    }),
+    alternates: localizedAlternates(locale, path),
   };
 }
 

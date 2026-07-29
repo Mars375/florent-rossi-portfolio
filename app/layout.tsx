@@ -31,6 +31,9 @@ export async function generateMetadata(): Promise<Metadata> {
       description,
       images: [socialImage],
     },
+    icons: {
+      icon: "/favicon.svg",
+    },
   };
 }
 

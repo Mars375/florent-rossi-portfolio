@@ -551,6 +551,7 @@ a:focus-visible {
   position: absolute;
   inset: auto 32px 32px;
   max-width: 620px;
+  background: #151515;
   color: #fff;
 }
 

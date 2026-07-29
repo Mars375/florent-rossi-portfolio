@@ -142,7 +142,8 @@ export function LegalView({
         ];
 
   return (
-    <main>
+    <>
+      <main>
       <SiteHeader locale={locale} content={content} routeBase={routeBase} />
       <article className="legal-page shell">
         <header>
@@ -174,12 +175,15 @@ export function LegalView({
           {copy.updatedLabel}: {content.legal.updatedAt}
         </p>
       </article>
-      <FooterLinks
-        locale={locale}
-        content={content}
-        routeBase={routeBase}
-        compact
-      />
-    </main>
+      </main>
+      <footer>
+        <FooterLinks
+          locale={locale}
+          content={content}
+          routeBase={routeBase}
+          compact
+        />
+      </footer>
+    </>
   );
 }
